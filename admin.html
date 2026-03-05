@@ -3,50 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>מערכת ניהול - הגלריה שלי</title>
+    <title>לוח בקרה מתקדם - הגלריה שלי</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
-            display: flex; justify-content: center; align-items: center;
-            height: 100vh; margin: 0;
+            margin: 0; background-color: #f0f2f5; display: flex; height: 100vh; overflow: hidden;
         }
-        .admin-card {
-            background: white; padding: 40px; border-radius: 20px;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px;
+        /* אזור פאנל הניהול */
+        .sidebar {
+            width: 400px; background: white; padding: 30px; box-shadow: -5px 0 15px rgba(0,0,0,0.05);
+            overflow-y: auto; display: flex; flex-direction: column; gap: 25px; z-index: 10;
         }
-        h2 { color: #4361ee; text-align: center; margin-bottom: 30px; }
-        .input-group { margin-bottom: 20px; }
+        h2 { color: #2b2d42; margin: 0; font-size: 24px; border-bottom: 3px solid #ff477e; padding-bottom: 10px; display: inline-block;}
+        
+        .card {
+            background: #ffffff; border: 1px solid #e9ecef; border-radius: 12px; padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+        .card-title { font-size: 18px; font-weight: bold; margin-bottom: 15px; color: #4361ee; }
+        
         input[type="text"], input[type="file"] {
-            width: 100%; padding: 15px; border: 2px solid #e9ecef;
-            border-radius: 10px; box-sizing: border-box; font-family: inherit;
+            width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid #e9ecef;
+            border-radius: 8px; box-sizing: border-box; transition: 0.3s;
         }
-        .btn-upload {
-            background: linear-gradient(135deg, #4361ee, #3f37c9);
-            color: white; border: none; padding: 15px; width: 100%;
-            border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer;
+        input[type="text"]:focus { border-color: #4361ee; outline: none; }
+        
+        button {
+            width: 100%; padding: 12px; border: none; border-radius: 8px;
+            font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; color: white;
         }
-        .loader { display: none; text-align: center; margin-top: 20px; color: #4361ee; font-weight: bold; }
-        .status { text-align: center; margin-top: 15px; font-weight: bold; }
+        .btn-primary { background: #4361ee; }
+        .btn-primary:hover { background: #3f37c9; transform: translateY(-2px); }
+        .btn-success { background: #2a9d8f; }
+        .btn-success:hover { background: #21867a; transform: translateY(-2px); }
+        
+        #loader { display: none; text-align: center; color: #4361ee; font-weight: bold; margin-top: 10px; }
+        #statusMsg { text-align: center; margin-top: 10px; font-weight: bold; }
+
+        /* אזור התצוגה המקדימה */
+        .preview-area {
+            flex-grow: 1; display: flex; flex-direction: column; background: #e0e5ec; padding: 20px;
+        }
+        .preview-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;
+        }
+        .preview-title { font-size: 20px; font-weight: bold; color: #555; }
+        .btn-refresh { width: auto; background: #ff477e; padding: 8px 20px; }
+        .btn-refresh:hover { background: #e63946; }
+        
+        iframe {
+            width: 100%; flex-grow: 1; border: none; border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); background: white;
+        }
     </style>
 </head>
 <body>
 
-    <div class="admin-card">
-        <h2>הוספת פרויקט חדש</h2>
-        <div class="input-group">
-            <input type="text" id="projectTitle" placeholder="כותרת הפרויקט או התמונה">
-        </div>
-        <div class="input-group">
+    <div class="sidebar">
+        <h2>לוח בקרה שלי</h2>
+
+        <div class="card">
+            <div class="card-title">✨ הוספת פרויקט חדש</div>
+            <input type="text" id="projectTitle" placeholder="כותרת הפרויקט">
             <input type="file" id="projectImage" accept="image/*">
+            <button class="btn-primary" onclick="uploadData()">העלה לגלריה</button>
+            <div id="loader">מעלה נתונים... ⏳</div>
+            <div id="statusMsg"></div>
         </div>
-        <button class="btn-upload" onclick="uploadData()">העלה לאתר</button>
-        <div class="loader" id="loader">מעלה נתונים, אנא המתן... 🚀</div>
-        <div class="status" id="statusMsg"></div>
+
+        <div class="card">
+            <div class="card-title">📝 עריכת טקסטים באתר</div>
+            <input type="text" id="siteMainTitle" placeholder="כותרת ראשית (למשל: הפרויקטים שלי)">
+            <input type="text" id="siteSubTitle" placeholder="כותרת משנית">
+            <button class="btn-success" onclick="alert('בהמשך נחבר גם את זה לשרת!')">שמור טקסטים</button>
+        </div>
+        
+        <div class="card">
+            <div class="card-title">🗑️ ניהול ומחיקה</div>
+            <button class="btn-primary" style="background:#e63946;" onclick="alert('בהמשך נחבר אפשרות למחיקת פריטים!')">נהל פרויקטים קיימים</button>
+        </div>
+    </div>
+
+    <div class="preview-area">
+        <div class="preview-header">
+            <div class="preview-title">📱 תצוגה מקדימה של האתר</div>
+            <button class="btn-refresh" onclick="refreshPreview()">🔄 רענן תצוגה</button>
+        </div>
+        <iframe id="sitePreview" src="index.html"></iframe>
     </div>
 
     <script>
-        // --- החלף את הכתובת הזו בכתובת המלאה שקיבלת מגוגל סקריפט ---
+        // --- החלף בכתובת המעודכנת מהפריסה החדשה! ---
         const gasUrl = 'https://script.google.com/macros/s/https://script.google.com/macros/s/AKfycbzhQ3D6LYDGmN2-WgfBSyBcQuzu6nLdxE4VmFRT2anbmzz5SU9RnTlEBEXDFxw2CS_e/exec/exec';
 
         async function uploadData() {
@@ -54,8 +101,7 @@
             const fileInput = document.getElementById('projectImage');
             
             if (!title || !fileInput.files[0]) {
-                alert('נא למלא כותרת ולבחור תמונה!');
-                return;
+                alert('נא למלא כותרת ולבחור תמונה!'); return;
             }
 
             document.getElementById('loader').style.display = 'block';
@@ -66,38 +112,42 @@
 
             reader.onload = async function(e) {
                 const base64Data = e.target.result.split(',')[1];
-                
                 const formData = new URLSearchParams();
+                formData.append('action', 'upload'); // הוספנו פרמטר של סוג פעולה לעתיד
                 formData.append('title', title);
                 formData.append('fileData', base64Data);
                 formData.append('fileName', file.name);
                 formData.append('mimeType', file.type);
 
                 try {
-                    const response = await fetch(gasUrl, {
-                        method: 'POST',
-                        body: formData
-                    });
+                    const response = await fetch(gasUrl, { method: 'POST', body: formData });
                     const data = await response.json();
                     
                     document.getElementById('loader').style.display = 'none';
                     if(data.status === "success") {
-                        document.getElementById('statusMsg').style.color = 'green';
+                        document.getElementById('statusMsg').style.color = '#2a9d8f';
                         document.getElementById('statusMsg').innerText = '✅ הועלה בהצלחה!';
-                        document.getElementById('projectTitle').value = '';
-                        fileInput.value = '';
+                        document.getElementById('projectTitle').value = ''; fileInput.value = '';
+                        // מרענן אוטומטית את התצוגה המקדימה כדי שתראה את התמונה החדשה!
+                        refreshPreview();
                     } else {
                         throw new Error(data.message);
                     }
                 } catch (err) {
                     document.getElementById('loader').style.display = 'none';
-                    document.getElementById('statusMsg').style.color = 'red';
-                    document.getElementById('statusMsg').innerText = '❌ שגיאה בהעלאה.';
+                    document.getElementById('statusMsg').style.color = '#e63946';
+                    document.getElementById('statusMsg').innerText = '❌ שגיאה בהעלאה. בדוק את מסוף המפתחים (F12).';
                     console.error(err);
                 }
             };
-            
             reader.readAsDataURL(file);
+        }
+
+        // פונקציה לרענון ה-iframe של התצוגה המקדימה
+        function refreshPreview() {
+            const iframe = document.getElementById('sitePreview');
+            // מוסיף פרמטר אקראי לכתובת כדי להכריח את הדפדפן לטעון מחדש ולא מהזיכרון (Cache)
+            iframe.src = 'index.html?t=' + new Date().getTime();
         }
     </script>
 </body>
