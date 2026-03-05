@@ -1,94 +1,76 @@
-<!DOCTYPE html>
-<html lang="he" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <title>הפורטפוליו והקבצים שלי</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f8f9fa; margin: 0; padding: 30px; }
-        h1 { color: #ff477e; text-align: center; }
-        .project-section { margin-bottom: 50px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
-        .project-title { color: #4361ee; border-bottom: 3px dashed #4cc9f0; padding-bottom: 10px; margin-bottom: 20px; }
-        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
-        .item-card { border: 1px solid #eee; border-radius: 10px; padding: 15px; text-align: center; transition: 0.3s; background: #fff; }
-        .item-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .item-image { width: 100%; height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; cursor: pointer; }
-        .file-icon { font-size: 50px; margin: 20px 0; color: #555; }
-        .download-btn { display: inline-block; background: #2a9d8f; color: white; text-decoration: none; padding: 8px 15px; border-radius: 5px; margin-top: 10px; font-weight: bold; }
-        #loader { text-align: center; font-size: 20px; color: #ff477e; }
-    </style>
-</head>
-<body>
+const gasUrl = 'https://script.google.com/macros/s/AKfycbzhQ3D6LYDGmN2-WgfBSyBcQuzu6nLdxE4VmFRT2anbmzz5SU9RnTlEBEXDFxw2CS_e/exec';
 
-    <h1>מאגר הפרויקטים שלי</h1>
-    <div id="loader">טוען נתונים מהשרת... ⏳</div>
-    <div id="projectsContainer"></div>
+async function loadProjects() {
+    try {
+        const response = await fetch(gasUrl);
+        const data = await response.json();
+        document.getElementById('loader').style.display = 'none';
+        
+        const projects = {};
+        data.forEach(item => {
+            if (!projects[item.projectName]) { projects[item.projectName] = []; }
+            projects[item.projectName].push(item);
+        });
 
-    <script>
-        // --- החלף לכתובת הסקריפט האמיתית שלך! ---
-        const gasUrl = 'https://script.google.com/macros/s/AKfycbzhQ3D6LYDGmN2-WgfBSyBcQuzu6nLdxE4VmFRT2anbmzz5SU9RnTlEBEXDFxw2CS_e/exec';
+        const container = document.getElementById('projectsContainer');
+        
+        for (const [projectName, items] of Object.entries(projects)) {
+            const section = document.createElement('div');
+            section.className = 'project-section';
+            
+            const title = document.createElement('h2');
+            title.className = 'project-title';
+            title.innerText = '📁 ' + projectName;
+            section.appendChild(title);
 
-        async function loadProjects() {
-            try {
-                const response = await fetch(gasUrl);
-                const data = await response.json();
-                document.getElementById('loader').style.display = 'none';
+            const grid = document.createElement('div');
+            grid.className = 'gallery-grid';
+
+            items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'item-card';
                 
-                // סידור הנתונים לפי קבוצות (פרויקטים)
-                const projects = {};
-                data.forEach(item => {
-                    if (!projects[item.projectName]) { projects[item.projectName] = []; }
-                    projects[item.projectName].push(item);
-                });
-
-                const container = document.getElementById('projectsContainer');
+                const isImage = item.fileName.match(/\.(jpeg|jpg|gif|png|webp)$/i) != null;
                 
-                // יצירת אזור תצוגה לכל פרויקט
-                for (const [projectName, items] of Object.entries(projects)) {
-                    const section = document.createElement('div');
-                    section.className = 'project-section';
-                    
-                    const title = document.createElement('h2');
-                    title.className = 'project-title';
-                    title.innerText = '📁 ' + projectName;
-                    section.appendChild(title);
+                if (isImage) {
+                    // מרכיב את הכתובת של התמונה הממוזערת (מוסיף thumb_ לפני שם הקובץ)
+                    const urlParts = item.fileUrl.split('/');
+                    const fileNameEncoded = urlParts.pop();
+                    const thumbUrl = urlParts.join('/') + '/thumb_' + fileNameEncoded;
 
-                    const grid = document.createElement('div');
-                    grid.className = 'gallery-grid';
-
-                    items.forEach(item => {
-                        const card = document.createElement('div');
-                        card.className = 'item-card';
-                        
-                        // בדיקה אם הקובץ הוא תמונה (לפי הסיומת של השם)
-                        const isImage = item.fileName.match(/\.(jpeg|jpg|gif|png|webp)$/i) != null;
-                        
-                        if (isImage) {
-                            card.innerHTML = `
-                                <img class="item-image" src="${item.fileUrl}" alt="${item.fileName}" onclick="window.open('${item.fileUrl}', '_blank')">
-                                <div><strong>${item.fileName}</strong></div>
-                            `;
-                        } else {
-                            // אם זה לא תמונה, יציג סמל של קובץ וכפתור הורדה
-                            card.innerHTML = `
-                                <div class="file-icon">📄</div>
-                                <div><strong>${item.fileName}</strong></div>
-                                <a href="${item.fileUrl}" class="download-btn" target="_blank">הורד / פתח קובץ</a>
-                            `;
-                        }
-                        grid.appendChild(card);
-                    });
-                    
-                    section.appendChild(grid);
-                    container.appendChild(section);
+                    card.innerHTML = `
+                        <img class="item-image" src="${thumbUrl}" alt="${item.fileName}" onclick="openModal('${item.fileUrl}', '${item.fileName}')">
+                        <div><strong>${item.fileName}</strong></div>
+                    `;
+                } else {
+                    card.innerHTML = `
+                        <div class="file-icon">📄</div>
+                        <div><strong>${item.fileName}</strong></div>
+                        <a href="${item.fileUrl}" class="download-btn" target="_blank">הורד / פתח קובץ</a>
+                    `;
                 }
-
-            } catch (error) {
-                document.getElementById('loader').innerText = '❌ שגיאה בטעינת הנתונים.';
-                console.error(error);
-            }
+                grid.appendChild(card);
+            });
+            section.appendChild(grid);
+            container.appendChild(section);
         }
+    } catch (error) {
+        document.getElementById('loader').innerText = '❌ שגיאה בטעינת הנתונים.';
+        console.error(error);
+    }
+}
 
-        window.onload = loadProjects;
-    </script>
-</body>
-</html>
+// פונקציות לחלון הקופץ של תמונה באיכות מלאה
+function openModal(fullSizeSrc, titleText) {
+    // מניח שיש לך ב-HTML את קוד ה-Modal שהיה לנו בגרסאות קודמות!
+    // אם חסר לך, אפשר גם פשוט לעשות: window.open(fullSizeSrc, '_blank');
+    let modal = document.getElementById("imageModal");
+    if(!modal) { window.open(fullSizeSrc, '_blank'); return; }
+    
+    modal.style.display = "block";
+    document.getElementById("expandedImg").src = fullSizeSrc;
+    document.getElementById("expandedTitle").innerText = titleText;
+}
+
+function closeModal() { document.getElementById("imageModal").style.display = "none"; }
+window.onload = loadProjects;
