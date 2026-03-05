@@ -1,188 +1,70 @@
-<!DOCTYPE html>
-<html lang="he" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>לוח בקרה מתקדם - הגלריה שלי</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0; background-color: #f0f2f5; display: flex; height: 100vh; overflow: hidden;
-        }
-        /* אזור פאנל הניהול */
-        .sidebar {
-            width: 450px; background: white; padding: 30px; box-shadow: -5px 0 15px rgba(0,0,0,0.05);
-            overflow-y: auto; display: flex; flex-direction: column; gap: 25px; z-index: 10;
-        }
-        h2 { color: #2b2d42; margin: 0; font-size: 24px; border-bottom: 3px solid #ff477e; padding-bottom: 10px; display: inline-block;}
-        
-        .card {
-            background: #ffffff; border: 1px solid #e9ecef; border-radius: 12px; padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-        }
-        .card-title { font-size: 18px; font-weight: bold; margin-bottom: 15px; color: #4361ee; }
-        
-        input[type="text"], input[type="file"] {
-            width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid #e9ecef;
-            border-radius: 8px; box-sizing: border-box; transition: 0.3s;
-        }
-        input[type="text"]:focus { border-color: #4361ee; outline: none; }
-        
-        button {
-            width: 100%; padding: 12px; border: none; border-radius: 8px;
-            font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; color: white;
-        }
-        .btn-upload { background: #4361ee; } .btn-upload:hover { background: #3f37c9; transform: translateY(-2px); }
-        .btn-refresh-list { background: #2a9d8f; margin-bottom: 15px; } .btn-refresh-list:hover { background: #21867a; }
-        .btn-delete { background: #e63946; padding: 6px 12px; width: auto; font-size: 14px; } .btn-delete:hover { background: #d62828; }
-        
-        .file-list { list-style: none; padding: 0; margin: 0; max-height: 300px; overflow-y: auto; }
-        .file-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
-        .file-info { display: flex; flex-direction: column; }
-        .project-badge { font-size: 11px; background: #eee; padding: 3px 8px; border-radius: 10px; color: #555; width: fit-content; margin-bottom: 4px; }
-        
-        #loader { display: none; text-align: center; color: #4361ee; font-weight: bold; margin-top: 10px; }
+// --- החלף כאן בכתובת השרת! ---
+const gasUrl = 'https://script.google.com/macros/s/AKfycbzhQ3D6LYDGmN2-WgfBSyBcQuzu6nLdxE4VmFRT2anbmzz5SU9RnTlEBEXDFxw2CS_e/exec';
 
-        /* אזור התצוגה המקדימה */
-        .preview-area {
-            flex-grow: 1; display: flex; flex-direction: column; background: #e0e5ec; padding: 20px;
-        }
-        .preview-header {
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;
-        }
-        .preview-title { font-size: 20px; font-weight: bold; color: #555; }
-        .btn-refresh-site { width: auto; background: #ff477e; padding: 8px 20px; }
-        .btn-refresh-site:hover { background: #e63946; }
-        
-        iframe {
-            width: 100%; flex-grow: 1; border: none; border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); background: white;
-        }
-    </style>
-</head>
-<body>
+async function uploadData() {
+    const projectName = document.getElementById('projectName').value;
+    const fileInput = document.getElementById('fileInput');
+    
+    if (!projectName || !fileInput.files[0]) { alert('נא למלא שם פרויקט ולבחור קובץ!'); return; }
 
-    <div class="sidebar">
-        <h2>לוח בקרה</h2>
+    document.getElementById('loader').style.display = 'block';
+    document.getElementById('loader').innerText = 'מכווץ ומעלה קובץ... 🚀';
 
-        <div class="card">
-            <div class="card-title">✨ העלאת קובץ חדש</div>
-            <input type="text" id="projectName" placeholder="שם הפרויקט (למשל: תמונות חדשות)">
-            <input type="file" id="fileInput">
-            <button class="btn-upload" onclick="uploadData()">העלה לאתר</button>
-            <div id="loader">פעולה מתבצעת... ⏳</div>
-        </div>
+    const file = fileInput.files[0];
+    const reader = new FileReader();
 
-        <div class="card">
-            <div class="card-title">🗑️ ניהול קבצים קיימים</div>
-            <button class="btn-refresh-list" onclick="loadFiles()">רענן רשימת קבצים</button>
-            <ul class="file-list" id="fileList"></ul>
-        </div>
-    </div>
+    reader.onload = async function(e) {
+        const base64Data = e.target.result.split(',')[1];
+        let thumbData = "";
 
-    <div class="preview-area">
-        <div class="preview-header">
-            <div class="preview-title">📱 תצוגה מקדימה של האתר</div>
-            <button class="btn-refresh-site" onclick="refreshPreview()">🔄 רענן תצוגה</button>
-        </div>
-        <iframe id="sitePreview" src="index.html"></iframe>
-    </div>
-
-    <script>
-        // --- החלף כאן בכתובת המעודכנת של השרת שלך! ---
-        const gasUrl = 'https://script.google.com/macros/s/AKfycbzhQ3D6LYDGmN2-WgfBSyBcQuzu6nLdxE4VmFRT2anbmzz5SU9RnTlEBEXDFxw2CS_e/exec';
-
-        // פונקציית העלאה
-        async function uploadData() {
-            const projectName = document.getElementById('projectName').value;
-            const fileInput = document.getElementById('fileInput');
+        // אם זו תמונה, אנחנו מכווצים אותה מיד בדפדפן!
+        if (file.type.startsWith('image/')) {
+            const img = new Image();
+            img.src = e.target.result;
+            await new Promise(r => img.onload = r); // ממתין שהתמונה תיטען לזיכרון
             
-            if (!projectName || !fileInput.files[0]) { alert('נא למלא שם פרויקט ולבחור קובץ!'); return; }
-
-            document.getElementById('loader').style.display = 'block';
-            document.getElementById('loader').innerText = 'מעלה קובץ... 🚀';
-
-            const file = fileInput.files[0];
-            const reader = new FileReader();
-
-            reader.onload = async function(e) {
-                const base64Data = e.target.result.split(',')[1];
-                const formData = new URLSearchParams();
-                formData.append('action', 'upload');
-                formData.append('projectName', projectName);
-                formData.append('fileData', base64Data);
-                formData.append('fileName', file.name);
-
-                try {
-                    const response = await fetch(gasUrl, { method: 'POST', body: formData });
-                    const data = await response.json();
-                    if(data.status === "success") {
-                        alert('✅ הועלה בהצלחה!');
-                        document.getElementById('fileInput').value = '';
-                        loadFiles(); // רענון רשימת הקבצים
-                        refreshPreview(); // רענון התצוגה המקדימה של האתר
-                    } else { throw new Error(data.message); }
-                } catch (err) { alert('❌ שגיאה בהעלאה. ודא ששם המאגר נכון. פרטים: ' + err.message); }
-                document.getElementById('loader').style.display = 'none';
-            };
-            reader.readAsDataURL(file);
-        }
-
-        // טעינת רשימת הקבצים
-        async function loadFiles() {
-            try {
-                const response = await fetch(gasUrl);
-                const data = await response.json();
-                const list = document.getElementById('fileList');
-                list.innerHTML = '';
-
-                data.forEach(item => {
-                    const li = document.createElement('li');
-                    li.className = 'file-item';
-                    li.innerHTML = `
-                        <div class="file-info">
-                            <span class="project-badge">📁 ${item.projectName}</span>
-                            <strong>${item.fileName}</strong>
-                        </div>
-                        <button class="btn-delete" onclick="deleteFile('${item.githubPath}', ${item.rowIndex})">מחק</button>
-                    `;
-                    list.appendChild(li);
-                });
-            } catch (err) { console.error('Error fetching data:', err); }
-        }
-
-        // מחיקת קובץ
-        async function deleteFile(githubPath, rowIndex) {
-            if(!confirm('האם אתה בטוח שברצונך למחוק קובץ זה לצמיתות?')) return;
+            const canvas = document.createElement('canvas');
+            const MAX_WIDTH = 400; // הרוחב המקסימלי לתמונה הקטנה
+            let width = img.width;
+            let height = img.height;
             
-            document.getElementById('loader').style.display = 'block';
-            document.getElementById('loader').innerText = 'מוחק קובץ... 🗑️';
-
-            const formData = new URLSearchParams();
-            formData.append('action', 'delete');
-            formData.append('githubPath', githubPath);
-            formData.append('rowIndex', rowIndex);
-
-            try {
-                const response = await fetch(gasUrl, { method: 'POST', body: formData });
-                const data = await response.json();
-                if(data.status === "success") {
-                    alert('✅ נמחק בהצלחה!');
-                    loadFiles(); // טוען מחדש את הרשימה
-                    refreshPreview(); // מרענן את האתר
-                } else { throw new Error(data.message); }
-            } catch (err) { alert('❌ שגיאה במחיקה: ' + err.message); }
-            document.getElementById('loader').style.display = 'none';
+            if (width > MAX_WIDTH) {
+                height = height * (MAX_WIDTH / width);
+                width = MAX_WIDTH;
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // יצירת התמונה הממוזערת ושמירתה
+            thumbData = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
         }
 
-        // רענון התצוגה המקדימה
-        function refreshPreview() {
-            const iframe = document.getElementById('sitePreview');
-            iframe.src = 'index.html?t=' + new Date().getTime();
-        }
+        const formData = new URLSearchParams();
+        formData.append('action', 'upload');
+        formData.append('projectName', projectName);
+        formData.append('fileData', base64Data);
+        formData.append('fileName', file.name);
+        if (thumbData) formData.append('thumbData', thumbData); // שולח גם את הממוזערת
 
-        // טעינת רשימת הקבצים כשהדף עולה
-        window.onload = loadFiles;
-    </script>
-</body>
-</html>
+        try {
+            const response = await fetch(gasUrl, { method: 'POST', body: formData });
+            const data = await response.json();
+            if(data.status === "success") {
+                alert('✅ הועלה בהצלחה!');
+                document.getElementById('fileInput').value = '';
+                loadFiles(); refreshPreview();
+            } else { throw new Error(data.message); }
+        } catch (err) { alert('❌ שגיאה בהעלאה: ' + err.message); }
+        document.getElementById('loader').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+}
+
+// שאר הפונקציות נשארות זהות...
+async function loadFiles() { /* השאר את הקוד הקיים של טעינת הרשימה */ }
+async function deleteFile(githubPath, rowIndex) { /* השאר את הקוד הקיים של המחיקה */ }
+function refreshPreview() { document.getElementById('sitePreview').src = 'index.html?t=' + new Date().getTime(); }
+window.onload = loadFiles;
