@@ -3,91 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>גלריית התמונות שלי</title>
+    <title>הגלריה הצבעונית שלי</title>
     <style>
-        /* עיצוב כללי של הדף */
+        /* עיצוב כללי ורקע צבעוני */
         body { 
-            font-family: Arial, sans-serif; 
-            background-color: #f0f2f5; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            /* מעבר צבעים מהמם לרקע */
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            min-height: 100vh;
             text-align: center; 
             margin: 0; 
-            padding: 20px; 
+            padding: 30px; 
         }
         
-        h1 { color: #333; }
+        /* עיצוב הכותרת הראשית */
+        h1 { 
+            color: #ff477e; 
+            font-size: 45px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2); /* צללית קלה */
+            margin-bottom: 5px;
+        }
 
-        /* עיצוב הגלריה והמסגרות של התמונות */
+        p {
+            color: #555;
+            font-size: 20px;
+            font-weight: bold;
+            background-color: rgba(255, 255, 255, 0.6);
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 20px;
+        }
+
+        /* עיצוב הגלריה */
         .gallery { 
             display: flex; 
             flex-wrap: wrap; 
             justify-content: center; 
-            gap: 25px; 
-            margin-top: 40px; 
+            gap: 40px; 
+            margin-top: 50px; 
         }
         
+        /* עיצוב בסיסי למסגרות של התמונות */
         .image-frame {
             background-color: white;
-            padding: 12px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            transition: transform 0.3s ease;
+            padding: 15px;
+            border-radius: 20px;
+            border: 6px solid white; /* גבול לבן כברירת מחדל */
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            transition: all 0.4s ease; /* מעבר חלק לכל השינויים */
         }
         
-        /* אפקט ריחוף - המסגרת קופצת קצת כשעוברים עליה עם העכבר */
-        .image-frame:hover { 
-            transform: scale(1.05); 
-        }
-        
+        /* עיצוב התמונה עצמה */
         .gallery img {
-            width: 250px;
-            height: 200px;
-            object-fit: cover; /* חותך את התמונה בצורה יפה כדי שתתאים לריבוע */
-            border-radius: 6px;
-            cursor: pointer; /* משנה את העכבר ליד לוחצת */
+            width: 260px;
+            height: 220px;
+            object-fit: cover; 
+            border-radius: 10px;
+            cursor: pointer; 
         }
 
-        /* עיצוב חלון ההגדלה (המסך השחור מסביב) */
+        /* ----- אפקטים במעבר עכבר (Hover) ----- */
+        
+        /* תמונה ראשונה - הופכת לצהוב וכתום */
+        .image-frame:nth-child(1):hover {
+            transform: scale(1.1) rotate(3deg); /* גדל ומסתובב קצת ימינה */
+            background-color: #ffe066;
+            border-color: #f77f00;
+            box-shadow: 0 15px 25px rgba(247, 127, 0, 0.4);
+        }
+
+        /* תמונה שנייה - הופכת לתכלת וכחול */
+        .image-frame:nth-child(2):hover {
+            transform: scale(1.1) rotate(-3deg); /* גדל ומסתובב קצת שמאלה */
+            background-color: #90e0ef;
+            border-color: #0077b6;
+            box-shadow: 0 15px 25px rgba(0, 119, 182, 0.4);
+        }
+
+        /* תמונה שלישית - הופכת לירוק בהיר וכהה */
+        .image-frame:nth-child(3):hover {
+            transform: scale(1.1) rotate(3deg);
+            background-color: #b7e4c7;
+            border-color: #2d6a4f;
+            box-shadow: 0 15px 25px rgba(45, 106, 79, 0.4);
+        }
+
+        /* ----- חלון ההגדלה (המסך השחור) ----- */
         .modal {
-            display: none; /* מוסתר עד שלוחצים */
+            display: none; 
             position: fixed; 
             z-index: 1000; 
             left: 0; 
             top: 0;
             width: 100%; 
             height: 100%;
-            background-color: rgba(0,0,0,0.85); /* רקע שחור שקוף */
+            background-color: rgba(0,0,0,0.9); 
         }
         
-        /* התמונה המוגדלת עצמה */
         .modal-content {
-            margin: 5% auto;
+            margin: 3% auto;
             display: block;
-            max-width: 90%;
+            max-width: 85%;
             max-height: 85vh;
-            border-radius: 8px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            border-radius: 15px;
+            border: 5px solid #ff477e; /* מסגרת ורודה לתמונה המוגדלת */
+            box-shadow: 0 0 30px rgba(255, 71, 126, 0.6);
         }
         
-        /* כפתור הסגירה (X) */
         .close {
             position: absolute; 
             top: 20px; 
             right: 40px;
             color: white; 
-            font-size: 50px; 
+            font-size: 60px; 
             font-weight: bold; 
             cursor: pointer;
+            transition: 0.3s;
         }
         
         .close:hover {
-            color: #bbb;
+            color: #ff477e; /* הכפתור סגירה נהיה ורוד כשעוברים עליו */
+            transform: scale(1.2);
         }
     </style>
 </head>
 <body>
 
-    <h1>הגלריה שלי</h1>
-    <p>לחץ על תמונה כדי להגדיל אותה למסך מלא</p>
+    <h1>הגלריה הצבעונית שלי</h1>
+    <p>העבר את העכבר על התמונות ולחץ כדי להגדיל!</p>
 
     <div class="gallery">
         <div class="image-frame">
