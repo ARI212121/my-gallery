@@ -1,109 +1,183 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>מערכת ניהול - הגלריה שלי</title>
-    <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f9; color: #333; }
-        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #2c3e50; }
-        input[type="text"], input[type="file"], button { 
-            display: block; width: 100%; margin: 10px 0; padding: 12px; 
-            box-sizing: border-box; border-radius: 4px; border: 1px solid #ccc; font-size: 16px;
-        }
-        button { background-color: #4CAF50; color: white; border: none; cursor: pointer; font-weight: bold; transition: background 0.3s; }
-        button:hover { background-color: #45a049; }
-        #loader { display: none; background-color: #fff3cd; color: #856404; padding: 10px; border-radius: 4px; text-align: center; margin-bottom: 15px; font-weight: bold; border: 1px solid #ffeeba; }
-        iframe { width: 100%; height: 500px; border: 2px dashed #ddd; margin-top: 20px; border-radius: 4px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>הגלריה שלי - תצוגה מרהיבה</title>
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #eef2f5;
+        color: #333;
+        margin: 0; padding: 20px;
+    }
+    #loader {
+        text-align: center; font-size: 1.2em; color: #555; margin: 50px 0;
+    }
+    .project-section {
+        background: #fff; border-radius: 12px; padding: 25px;
+        margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+    .project-title {
+        margin-top: 0; color: #2c3e50; border-bottom: 2px solid #3498db;
+        padding-bottom: 10px; margin-bottom: 20px;
+    }
+    .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 25px;
+    }
+    .item-card {
+        background: #fff; border: 1px solid #e0e0e0; border-radius: 10px;
+        padding: 15px; text-align: center; cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+    }
+    /* אנימציית המעבר שביקשת */
+    .item-card:hover {
+        transform: scale(1.05) rotate(2deg);
+        border-color: #3498db;
+        box-shadow: 0 10px 20px rgba(52, 152, 219, 0.2);
+    }
+    .item-image {
+        max-width: 100%; height: 120px; object-fit: cover;
+        border-radius: 6px; margin-bottom: 10px;
+    }
+    /* תצוגה מקדימה חיה לקבצי HTML */
+    .html-preview-container {
+        width: 100%; height: 120px; overflow: hidden;
+        border-radius: 6px; margin-bottom: 10px; position: relative;
+        border: 1px solid #ddd; background: #fafafa;
+    }
+    .html-preview-container iframe {
+        width: 400%; height: 400%; border: none;
+        transform: scale(0.25); transform-origin: top right;
+        pointer-events: none; /* מונע לחיצה בתוך המסגרת המוקטנת */
+    }
+    .file-icon {
+        font-size: 50px; margin-bottom: 10px; color: #7f8c8d;
+    }
+    .item-name {
+        font-size: 14px; font-weight: bold; margin-bottom: 10px;
+        word-break: break-all;
+    }
+    .download-btn {
+        display: inline-block; width: 100%; padding: 8px 0;
+        background-color: #3498db; color: white; text-decoration: none;
+        border-radius: 5px; font-size: 13px; font-weight: bold;
+        transition: background 0.3s;
+    }
+    .download-btn:hover { background-color: #2980b9; }
+    
+    /* מודל לתמונות */
+    .modal {
+        display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+        width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.85);
+    }
+    .modal-content {
+        margin: auto; display: block; max-width: 90%; max-height: 80vh; margin-top: 5vh; border-radius: 8px;
+    }
+    .close {
+        position: absolute; top: 15px; right: 35px; color: #fff;
+        font-size: 40px; font-weight: bold; cursor: pointer;
+    }
+    #expandedTitle { text-align: center; color: white; margin-top: 15px; font-size: 22px; }
+</style>
 </head>
 <body>
 
-<div class="container">
-    <h2>ניהול קבצים 📁</h2>
-    
-    <input type="text" id="projectName" placeholder="שם הפרויקט (למשל: אתר_ראווה)">
-    <input type="file" id="fileInput">
-    <button onclick="uploadData()">העלה קובץ לשרת</button>
-    
-    <div id="loader">מכווץ ומעלה קובץ... 🚀</div>
+<div id="loader">טוען קבצים מדהימים... ⏳</div>
+<div id="projectsContainer"></div>
 
-    <hr>
-    <h3>תצוגה מקדימה:</h3>
-    <iframe id="sitePreview" src="index.html"></iframe>
+<div id="imageModal" class="modal">
+  <span class="close" onclick="closeModal()">&times;</span>
+  <img class="modal-content" id="expandedImg">
+  <div id="expandedTitle"></div>
 </div>
 
 <script>
+// --- החלף כאן בכתובת השרת! ---
 const gasUrl = 'https://script.google.com/macros/s/AKfycbzhQ3D6LYDGmN2-WgfBSyBcQuzu6nLdxE4VmFRT2anbmzz5SU9RnTlEBEXDFxw2CS_e/exec';
 
-async function uploadData() {
-    const projectName = document.getElementById('projectName').value;
-    const fileInput = document.getElementById('fileInput');
-    
-    if (!projectName || !fileInput.files[0]) { alert('נא למלא שם פרויקט ולבחור קובץ!'); return; }
-
-    document.getElementById('loader').style.display = 'block';
-    document.getElementById('loader').innerText = 'מכווץ ומעלה קובץ... 🚀';
-
-    const file = fileInput.files[0];
-    const reader = new FileReader();
-
-    reader.onload = async function(e) {
-        const base64Data = e.target.result.split(',')[1];
-        let thumbData = "";
-
-        // כיווץ תמונות לתמונה ממוזערת
-        if (file.type.startsWith('image/')) {
-            const img = new Image();
-            img.src = e.target.result;
-            await new Promise(r => img.onload = r); 
-            
-            const canvas = document.createElement('canvas');
-            const MAX_WIDTH = 400; 
-            let width = img.width;
-            let height = img.height;
-            
-            if (width > MAX_WIDTH) {
-                height = height * (MAX_WIDTH / width);
-                width = MAX_WIDTH;
-            }
-            
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, width, height);
-            
-            thumbData = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
-        }
-
-        const formData = new URLSearchParams();
-        formData.append('action', 'upload');
-        formData.append('projectName', projectName);
-        formData.append('fileData', base64Data);
-        formData.append('fileName', file.name);
-        if (thumbData) formData.append('thumbData', thumbData); 
-
-        try {
-            const response = await fetch(gasUrl, { method: 'POST', body: formData });
-            const data = await response.json();
-            if(data.status === "success") {
-                alert('✅ הועלה בהצלחה!');
-                document.getElementById('fileInput').value = '';
-                refreshPreview();
-            } else { throw new Error(data.message); }
-        } catch (err) { alert('❌ שגיאה בהעלאה: ' + err.message); }
+async function loadProjects() {
+    try {
+        const response = await fetch(gasUrl);
+        const data = await response.json();
         document.getElementById('loader').style.display = 'none';
-    };
-    reader.readAsDataURL(file);
-}
+        
+        const projects = {};
+        data.forEach(item => {
+            if (!projects[item.projectName]) { projects[item.projectName] = []; }
+            projects[item.projectName].push(item);
+        });
 
-function refreshPreview() { 
-    const preview = document.getElementById('sitePreview');
-    if(preview) {
-        preview.src = 'index.html?t=' + new Date().getTime(); 
+        const container = document.getElementById('projectsContainer');
+        
+        for (const [projectName, items] of Object.entries(projects)) {
+            const section = document.createElement('div');
+            section.className = 'project-section';
+            
+            const title = document.createElement('h2');
+            title.className = 'project-title';
+            title.innerText = '📁 ' + projectName;
+            section.appendChild(title);
+
+            const grid = document.createElement('div');
+            grid.className = 'gallery-grid';
+
+            items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                
+                const isImage = item.fileName.match(/\.(jpeg|jpg|gif|png|webp)$/i) != null;
+                const isHtml = item.fileName.match(/\.(html|htm)$/i) != null;
+                
+                if (isImage) {
+                    const urlParts = item.fileUrl.split('/');
+                    const fileNameEncoded = urlParts.pop();
+                    const thumbUrl = urlParts.join('/') + '/thumb_' + fileNameEncoded;
+
+                    card.innerHTML = `
+                        <img class="item-image" src="${thumbUrl}" alt="${item.fileName}" onclick="openModal('${item.fileUrl}', '${item.fileName}')" onerror="this.src='${item.fileUrl}'">
+                        <div class="item-name">${item.fileName}</div>
+                    `;
+                } else if (isHtml) {
+                    // כאן קסם הרינדור - טוען את ה-HTML בתוך iframe מוקטן!
+                    card.innerHTML = `
+                        <div class="html-preview-container">
+                            <iframe src="${item.fileUrl}" scrolling="no" tabindex="-1"></iframe>
+                        </div>
+                        <div class="item-name">${item.fileName}</div>
+                        <a href="${item.fileUrl}" class="download-btn" target="_self">פתח אתר מלא</a>
+                    `;
+                } else {
+                    card.innerHTML = `
+                        <div class="file-icon">📄</div>
+                        <div class="item-name">${item.fileName}</div>
+                        <a href="${item.fileUrl}" class="download-btn" target="_self">הורד / פתח קובץ</a>
+                    `;
+                }
+                grid.appendChild(card);
+            });
+            section.appendChild(grid);
+            container.appendChild(section);
+        }
+    } catch (error) {
+        document.getElementById('loader').innerText = '❌ שגיאה בטעינת הנתונים.';
+        console.error(error);
     }
 }
+
+function openModal(fullSizeSrc, titleText) {
+    let modal = document.getElementById("imageModal");
+    modal.style.display = "block";
+    document.getElementById("expandedImg").src = fullSizeSrc;
+    document.getElementById("expandedTitle").innerText = titleText;
+}
+
+function closeModal() { document.getElementById("imageModal").style.display = "none"; }
+window.onload = loadProjects;
 </script>
+
 </body>
 </html>
