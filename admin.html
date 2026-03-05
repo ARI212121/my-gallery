@@ -5,7 +5,10 @@ async function uploadData() {
     const projectName = document.getElementById('projectName').value;
     const fileInput = document.getElementById('fileInput');
     
-    if (!projectName || !fileInput.files[0]) { alert('נא למלא שם פרויקט ולבחור קובץ!'); return; }
+    if (!projectName || !fileInput.files[0]) { 
+        alert('נא למלא שם פרויקט ולבחור קובץ!'); 
+        return; 
+    }
 
     document.getElementById('loader').style.display = 'block';
     document.getElementById('loader').innerText = 'מכווץ ומעלה קובץ... 🚀';
@@ -17,14 +20,13 @@ async function uploadData() {
         const base64Data = e.target.result.split(',')[1];
         let thumbData = "";
 
-        // אם זו תמונה, אנחנו מכווצים אותה מיד בדפדפן!
         if (file.type.startsWith('image/')) {
             const img = new Image();
             img.src = e.target.result;
-            await new Promise(r => img.onload = r); // ממתין שהתמונה תיטען לזיכרון
+            await new Promise(r => img.onload = r);
             
             const canvas = document.createElement('canvas');
-            const MAX_WIDTH = 400; // הרוחב המקסימלי לתמונה הקטנה
+            const MAX_WIDTH = 400;
             let width = img.width;
             let height = img.height;
             
@@ -38,7 +40,6 @@ async function uploadData() {
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, width, height);
             
-            // יצירת התמונה הממוזערת ושמירתה
             thumbData = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
         }
 
@@ -47,7 +48,7 @@ async function uploadData() {
         formData.append('projectName', projectName);
         formData.append('fileData', base64Data);
         formData.append('fileName', file.name);
-        if (thumbData) formData.append('thumbData', thumbData); // שולח גם את הממוזערת
+        if (thumbData) formData.append('thumbData', thumbData);
 
         try {
             const response = await fetch(gasUrl, { method: 'POST', body: formData });
@@ -55,16 +56,33 @@ async function uploadData() {
             if(data.status === "success") {
                 alert('✅ הועלה בהצלחה!');
                 document.getElementById('fileInput').value = '';
-                loadFiles(); refreshPreview();
-            } else { throw new Error(data.message); }
-        } catch (err) { alert('❌ שגיאה בהעלאה: ' + err.message); }
+                loadFiles(); 
+                refreshPreview();
+            } else { 
+                throw new Error(data.message); 
+            }
+        } catch (err) { 
+            alert('❌ שגיאה בהעלאה: ' + err.message); 
+        }
         document.getElementById('loader').style.display = 'none';
     };
     reader.readAsDataURL(file);
 }
 
-// שאר הפונקציות נשארות זהות...
-async function loadFiles() { /* השאר את הקוד הקיים של טעינת הרשימה */ }
-async function deleteFile(githubPath, rowIndex) { /* השאר את הקוד הקיים של המחיקה */ }
-function refreshPreview() { document.getElementById('sitePreview').src = 'index.html?t=' + new Date().getTime(); }
+// פונקציות עזר קיימות
+async function loadFiles() {
+    // הוסף כאן את קוד טעינת הרשימה שלך במידה ויש
+}
+
+async function deleteFile(githubPath, rowIndex) {
+    // הוסף כאן את קוד המחיקה שלך במידה ויש
+}
+
+function refreshPreview() { 
+    const preview = document.getElementById('sitePreview');
+    if(preview) {
+        preview.src = 'index.html?t=' + new Date().getTime(); 
+    }
+}
+
 window.onload = loadFiles;
