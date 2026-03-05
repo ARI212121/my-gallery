@@ -1,3 +1,74 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>הגלריה שלי</title>
+<style>
+    /* עיצוב ואנימציות */
+    .gallery-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+    .item-card {
+        border: 2px solid transparent;
+        border-radius: 8px;
+        padding: 10px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.4s ease; /* הגדרת האנימציה */
+        background-color: #f9f9f9;
+        width: 150px;
+    }
+    /* האנימציה המגניבה שביקשת במעבר עכבר */
+    .item-card:hover {
+        transform: scale(1.08) rotate(3deg);
+        border-color: #4CAF50; /* צבע המסגרת משתנה */
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    }
+    .item-image {
+        max-width: 100%;
+        border-radius: 4px;
+    }
+    .download-btn {
+        display: inline-block;
+        margin-top: 10px;
+        padding: 5px 10px;
+        background-color: #2196F3;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+    }
+    /* עיצוב למודל (החלון הקופץ לתמונות) */
+    .modal {
+        display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+        width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8);
+    }
+    .modal-content {
+        margin: auto; display: block; width: 80%; max-width: 700px; margin-top: 50px;
+    }
+    .close {
+        position: absolute; top: 15px; right: 35px; color: #f1f1f1;
+        font-size: 40px; font-weight: bold; cursor: pointer;
+    }
+    #expandedTitle {
+        text-align: center; color: white; margin-top: 10px; font-size: 20px;
+    }
+</style>
+</head>
+<body>
+
+<div id="loader">טוען נתונים... ⏳</div>
+<div id="projectsContainer"></div>
+
+<div id="imageModal" class="modal">
+  <span class="close" onclick="closeModal()">&times;</span>
+  <img class="modal-content" id="expandedImg">
+  <div id="expandedTitle"></div>
+</div>
+
+<script>
 const gasUrl = 'https://script.google.com/macros/s/AKfycbzhQ3D6LYDGmN2-WgfBSyBcQuzu6nLdxE4VmFRT2anbmzz5SU9RnTlEBEXDFxw2CS_e/exec';
 
 async function loadProjects() {
@@ -33,7 +104,6 @@ async function loadProjects() {
                 const isImage = item.fileName.match(/\.(jpeg|jpg|gif|png|webp)$/i) != null;
                 
                 if (isImage) {
-                    // מרכיב את הכתובת של התמונה הממוזערת (מוסיף thumb_ לפני שם הקובץ)
                     const urlParts = item.fileUrl.split('/');
                     const fileNameEncoded = urlParts.pop();
                     const thumbUrl = urlParts.join('/') + '/thumb_' + fileNameEncoded;
@@ -46,7 +116,7 @@ async function loadProjects() {
                     card.innerHTML = `
                         <div class="file-icon">📄</div>
                         <div><strong>${item.fileName}</strong></div>
-                        <a href="${item.fileUrl}" class="download-btn" target="_blank">הורד / פתח קובץ</a>
+                        <a href="${item.fileUrl}" class="download-btn" target="_self">הורד / פתח קובץ</a>
                     `;
                 }
                 grid.appendChild(card);
@@ -60,17 +130,19 @@ async function loadProjects() {
     }
 }
 
-// פונקציות לחלון הקופץ של תמונה באיכות מלאה
 function openModal(fullSizeSrc, titleText) {
-    // מניח שיש לך ב-HTML את קוד ה-Modal שהיה לנו בגרסאות קודמות!
-    // אם חסר לך, אפשר גם פשוט לעשות: window.open(fullSizeSrc, '_blank');
     let modal = document.getElementById("imageModal");
-    if(!modal) { window.open(fullSizeSrc, '_blank'); return; }
-    
     modal.style.display = "block";
     document.getElementById("expandedImg").src = fullSizeSrc;
     document.getElementById("expandedTitle").innerText = titleText;
 }
 
-function closeModal() { document.getElementById("imageModal").style.display = "none"; }
+function closeModal() { 
+    document.getElementById("imageModal").style.display = "none"; 
+}
+
 window.onload = loadProjects;
+</script>
+
+</body>
+</html>
