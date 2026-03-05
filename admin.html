@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מערכת ניהול - הגלריה שלי</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; margin: 0;
+        }
+        .admin-card {
+            background: white; padding: 40px; border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px;
+        }
+        h2 { color: #4361ee; text-align: center; margin-bottom: 30px; }
+        .input-group { margin-bottom: 20px; }
+        input[type="text"], input[type="file"] {
+            width: 100%; padding: 15px; border: 2px solid #e9ecef;
+            border-radius: 10px; box-sizing: border-box; font-family: inherit;
+        }
+        .btn-upload {
+            background: linear-gradient(135deg, #4361ee, #3f37c9);
+            color: white; border: none; padding: 15px; width: 100%;
+            border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer;
+        }
+        .loader { display: none; text-align: center; margin-top: 20px; color: #4361ee; font-weight: bold; }
+        .status { text-align: center; margin-top: 15px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="admin-card">
+        <h2>הוספת פרויקט חדש</h2>
+        <div class="input-group">
+            <input type="text" id="projectTitle" placeholder="כותרת הפרויקט או התמונה">
+        </div>
+        <div class="input-group">
+            <input type="file" id="projectImage" accept="image/*">
+        </div>
+        <button class="btn-upload" onclick="uploadData()">העלה לאתר</button>
+        <div class="loader" id="loader">מעלה נתונים, אנא המתן... 🚀</div>
+        <div class="status" id="statusMsg"></div>
+    </div>
+
+    <script>
+        // --- החלף את הכתובת הזו בכתובת המלאה שקיבלת מגוגל סקריפט ---
+        const gasUrl = 'https://script.google.com/macros/s/https://script.google.com/macros/s/AKfycbzhQ3D6LYDGmN2-WgfBSyBcQuzu6nLdxE4VmFRT2anbmzz5SU9RnTlEBEXDFxw2CS_e/exec/exec';
+
+        async function uploadData() {
+            const title = document.getElementById('projectTitle').value;
+            const fileInput = document.getElementById('projectImage');
+            
+            if (!title || !fileInput.files[0]) {
+                alert('נא למלא כותרת ולבחור תמונה!');
+                return;
+            }
+
+            document.getElementById('loader').style.display = 'block';
+            document.getElementById('statusMsg').innerText = '';
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = async function(e) {
+                const base64Data = e.target.result.split(',')[1];
+                
+                const formData = new URLSearchParams();
+                formData.append('title', title);
+                formData.append('fileData', base64Data);
+                formData.append('fileName', file.name);
+                formData.append('mimeType', file.type);
+
+                try {
+                    const response = await fetch(gasUrl, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+                    
+                    document.getElementById('loader').style.display = 'none';
+                    if(data.status === "success") {
+                        document.getElementById('statusMsg').style.color = 'green';
+                        document.getElementById('statusMsg').innerText = '✅ הועלה בהצלחה!';
+                        document.getElementById('projectTitle').value = '';
+                        fileInput.value = '';
+                    } else {
+                        throw new Error(data.message);
+                    }
+                } catch (err) {
+                    document.getElementById('loader').style.display = 'none';
+                    document.getElementById('statusMsg').style.color = 'red';
+                    document.getElementById('statusMsg').innerText = '❌ שגיאה בהעלאה.';
+                    console.error(err);
+                }
+            };
+            
+            reader.readAsDataURL(file);
+        }
+    </script>
+</body>
+</html>
