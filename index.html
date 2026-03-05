@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>הגלריה הצבעונית שלי</title>
+    <title>הגלריה והפרויקטים שלי</title>
     <style>
-        /* עיצוב כללי ורקע צבעוני */
+        /* מעבר צבעים מהמם לרקע */
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            /* מעבר צבעים מהמם לרקע */
             background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
             min-height: 100vh;
             text-align: center; 
@@ -16,13 +15,14 @@
             padding: 30px; 
         }
         
-        /* עיצוב הכותרת הראשית */
-        h1 { 
+        h1, h2 { 
             color: #ff477e; 
-            font-size: 45px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2); /* צללית קלה */
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2); 
             margin-bottom: 5px;
         }
+
+        h1 { font-size: 45px; }
+        h2 { font-size: 35px; }
 
         p {
             color: #555;
@@ -34,26 +34,24 @@
             border-radius: 20px;
         }
 
-        /* עיצוב הגלריה */
+        /* --- אזור הגלריה --- */
         .gallery { 
             display: flex; 
             flex-wrap: wrap; 
             justify-content: center; 
             gap: 40px; 
-            margin-top: 50px; 
+            margin-top: 30px; 
         }
         
-        /* עיצוב בסיסי למסגרות של התמונות */
         .image-frame {
             background-color: white;
             padding: 15px;
             border-radius: 20px;
-            border: 6px solid white; /* גבול לבן כברירת מחדל */
+            border: 6px solid white; 
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            transition: all 0.4s ease; /* מעבר חלק לכל השינויים */
+            transition: all 0.4s ease; 
         }
         
-        /* עיצוב התמונה עצמה */
         .gallery img {
             width: 260px;
             height: 220px;
@@ -62,69 +60,84 @@
             cursor: pointer; 
         }
 
-        /* ----- אפקטים במעבר עכבר (Hover) ----- */
-        
-        /* תמונה ראשונה - הופכת לצהוב וכתום */
-        .image-frame:nth-child(1):hover {
-            transform: scale(1.1) rotate(3deg); /* גדל ומסתובב קצת ימינה */
-            background-color: #ffe066;
-            border-color: #f77f00;
-            box-shadow: 0 15px 25px rgba(247, 127, 0, 0.4);
+        /* אפקטים לגלריה */
+        .image-frame:nth-child(1):hover { transform: scale(1.1) rotate(3deg); background-color: #ffe066; border-color: #f77f00; }
+        .image-frame:nth-child(2):hover { transform: scale(1.1) rotate(-3deg); background-color: #90e0ef; border-color: #0077b6; }
+        .image-frame:nth-child(3):hover { transform: scale(1.1) rotate(3deg); background-color: #b7e4c7; border-color: #2d6a4f; }
+
+        /* --- אזור הדפים הנוספים (מיני-דפים) --- */
+        .pages-section {
+            margin-top: 70px;
+            padding-top: 30px;
+            border-top: 4px dashed rgba(255, 71, 126, 0.5); /* קו מפריד יפה */
         }
 
-        /* תמונה שנייה - הופכת לתכלת וכחול */
-        .image-frame:nth-child(2):hover {
-            transform: scale(1.1) rotate(-3deg); /* גדל ומסתובב קצת שמאלה */
-            background-color: #90e0ef;
-            border-color: #0077b6;
-            box-shadow: 0 15px 25px rgba(0, 119, 182, 0.4);
+        .pages-gallery {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            margin-top: 30px;
         }
 
-        /* תמונה שלישית - הופכת לירוק בהיר וכהה */
-        .image-frame:nth-child(3):hover {
-            transform: scale(1.1) rotate(3deg);
-            background-color: #b7e4c7;
-            border-color: #2d6a4f;
-            box-shadow: 0 15px 25px rgba(45, 106, 79, 0.4);
-        }
-
-        /* ----- חלון ההגדלה (המסך השחור) ----- */
-        .modal {
-            display: none; 
-            position: fixed; 
-            z-index: 1000; 
-            left: 0; 
-            top: 0;
-            width: 100%; 
-            height: 100%;
-            background-color: rgba(0,0,0,0.9); 
-        }
-        
-        .modal-content {
-            margin: 3% auto;
+        /* המסגרת של הדף הקטן (וגם הקישור עצמו) */
+        .mini-page-link {
             display: block;
-            max-width: 85%;
-            max-height: 85vh;
+            width: 300px;
+            height: 200px;
+            overflow: hidden; /* חותך את מה שיוצא מהמסגרת */
             border-radius: 15px;
-            border: 5px solid #ff477e; /* מסגרת ורודה לתמונה המוגדלת */
-            box-shadow: 0 0 30px rgba(255, 71, 126, 0.6);
+            border: 5px solid white;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            position: relative;
+            transition: transform 0.3s ease;
+            text-decoration: none; /* מבטל את הקו התחתון של הקישור */
+            background-color: white;
+        }
+
+        .mini-page-link:hover {
+            transform: scale(1.08);
+            border-color: #ff477e; /* משנה צבע מסגרת כשעוברים עם העכבר */
+        }
+
+        /* קסם הכיווץ: הדף האמיתי גדול, ואנחנו מכווצים אותו ל-25% מגודלו */
+        .mini-page-iframe {
+            width: 1200px;
+            height: 800px;
+            border: none;
+            transform: scale(0.25);
+            transform-origin: top right; /* בישראל (RTL) נכווץ מהפינה הימנית העליונה */
+            pointer-events: none; /* חשוב! גורם לעכבר "להתעלם" מהדף הפנימי וללחוץ על הקישור שעוטף אותו */
         }
         
+        /* כותרת יפה שיושבת על הדף המוקטן */
+        .page-title {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: rgba(255, 71, 126, 0.9);
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        /* --- חלון ההגדלה לתמונות --- */
+        .modal {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+            width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); 
+        }
+        .modal-content {
+            margin: 3% auto; display: block; max-width: 85%; max-height: 85vh;
+            border-radius: 15px; border: 5px solid #ff477e; box-shadow: 0 0 30px rgba(255, 71, 126, 0.6);
+        }
         .close {
-            position: absolute; 
-            top: 20px; 
-            right: 40px;
-            color: white; 
-            font-size: 60px; 
-            font-weight: bold; 
-            cursor: pointer;
-            transition: 0.3s;
+            position: absolute; top: 20px; right: 40px; color: white; font-size: 60px; 
+            font-weight: bold; cursor: pointer; transition: 0.3s;
         }
-        
-        .close:hover {
-            color: #ff477e; /* הכפתור סגירה נהיה ורוד כשעוברים עליו */
-            transform: scale(1.2);
-        }
+        .close:hover { color: #ff477e; transform: scale(1.2); }
     </style>
 </head>
 <body>
@@ -136,13 +149,28 @@
         <div class="image-frame">
             <img src="images/pic1.jpg" alt="תמונה 1" onclick="openModal(this.src)">
         </div>
-        
         <div class="image-frame">
             <img src="images/pic2.jpg" alt="תמונה 2" onclick="openModal(this.src)">
         </div>
-        
         <div class="image-frame">
             <img src="images/pic3.jpg" alt="תמונה 3" onclick="openModal(this.src)">
+        </div>
+    </div>
+
+    <div class="pages-section">
+        <h2>הדפים הנוספים שלי</h2>
+        <p>לחץ על חלון תצוגה כדי לעבור לדף המלא</p>
+        
+        <div class="pages-gallery">
+            <a href="page1.html" class="mini-page-link">
+                <iframe src="page1.html" class="mini-page-iframe"></iframe>
+                <div class="page-title">דף הפרויקט הראשון</div>
+            </a>
+
+            <a href="page2.html" class="mini-page-link">
+                <iframe src="page2.html" class="mini-page-iframe"></iframe>
+                <div class="page-title">דף הפרויקט השני</div>
+            </a>
         </div>
     </div>
 
@@ -156,7 +184,6 @@
             document.getElementById("imageModal").style.display = "block";
             document.getElementById("expandedImg").src = imageSrc;
         }
-
         function closeModal() {
             document.getElementById("imageModal").style.display = "none";
         }
