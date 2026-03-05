@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>גלריית התמונות שלי</title>
+    <style>
+        /* עיצוב כללי של הדף */
+        body { 
+            font-family: Arial, sans-serif; 
+            background-color: #f0f2f5; 
+            text-align: center; 
+            margin: 0; 
+            padding: 20px; 
+        }
+        
+        h1 { color: #333; }
+
+        /* עיצוב הגלריה והמסגרות של התמונות */
+        .gallery { 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap: 25px; 
+            margin-top: 40px; 
+        }
+        
+        .image-frame {
+            background-color: white;
+            padding: 12px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease;
+        }
+        
+        /* אפקט ריחוף - המסגרת קופצת קצת כשעוברים עליה עם העכבר */
+        .image-frame:hover { 
+            transform: scale(1.05); 
+        }
+        
+        .gallery img {
+            width: 250px;
+            height: 200px;
+            object-fit: cover; /* חותך את התמונה בצורה יפה כדי שתתאים לריבוע */
+            border-radius: 6px;
+            cursor: pointer; /* משנה את העכבר ליד לוחצת */
+        }
+
+        /* עיצוב חלון ההגדלה (המסך השחור מסביב) */
+        .modal {
+            display: none; /* מוסתר עד שלוחצים */
+            position: fixed; 
+            z-index: 1000; 
+            left: 0; 
+            top: 0;
+            width: 100%; 
+            height: 100%;
+            background-color: rgba(0,0,0,0.85); /* רקע שחור שקוף */
+        }
+        
+        /* התמונה המוגדלת עצמה */
+        .modal-content {
+            margin: 5% auto;
+            display: block;
+            max-width: 90%;
+            max-height: 85vh;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        
+        /* כפתור הסגירה (X) */
+        .close {
+            position: absolute; 
+            top: 20px; 
+            right: 40px;
+            color: white; 
+            font-size: 50px; 
+            font-weight: bold; 
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: #bbb;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>הגלריה שלי</h1>
+    <p>לחץ על תמונה כדי להגדיל אותה למסך מלא</p>
+
+    <div class="gallery">
+        <div class="image-frame">
+            <img src="images/pic1.jpg" alt="תמונה 1" onclick="openModal(this.src)">
+        </div>
+        
+        <div class="image-frame">
+            <img src="images/pic2.jpg" alt="תמונה 2" onclick="openModal(this.src)">
+        </div>
+        
+        <div class="image-frame">
+            <img src="images/pic3.jpg" alt="תמונה 3" onclick="openModal(this.src)">
+        </div>
+    </div>
+
+    <div id="imageModal" class="modal">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <img class="modal-content" id="expandedImg">
+    </div>
+
+    <script>
+        function openModal(imageSrc) {
+            document.getElementById("imageModal").style.display = "block";
+            document.getElementById("expandedImg").src = imageSrc;
+        }
+
+        function closeModal() {
+            document.getElementById("imageModal").style.display = "none";
+        }
+    </script>
+</body>
+</html>
