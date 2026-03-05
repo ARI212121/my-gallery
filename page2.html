@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מחולל קריינות Gemini TTS - 8K</title>
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .container { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
+        h2 { color: #333; text-align: center; margin-top: 0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
+        /* הוספתי את תגית ה-select כדי שתקבל את אותו העיצוב */
+        input, textarea, select { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-family: inherit; }
+        button { width: 100%; padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; transition: background 0.3s; font-weight: bold; }
+        button:hover { background-color: #218838; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        #status { margin-top: 15px; text-align: center; font-size: 14px; color: #555; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>קריינות Gemini (פורמט 8k)</h2>
+    
+    <label for="apiKey">מפתח API:</label>
+    <input type="password" id="apiKey" placeholder="הכנס את המפתח כאן...">
+
+    <label for="modelSelect">בחר מודל:</label>
+    <select id="modelSelect">
+        <option value="gemini-2.5-pro-preview-tts">Gemini 2.5 Pro (איכות גבוהה)</option>
+        <option value="gemini-2.5-flash-preview-tts">Gemini 2.5 Flash (מהיר יותר)</option>
+    </select>
+
+    <label for="voiceDesc">תיאור סגנון הקול:</label>
+    <input type="text" id="voiceDesc" placeholder="לדוגמה: קול בס סמכותי, קול שמח, דיבור מהיר...">
+
+    <label for="textInput">טקסט להקראה:</label>
+    <textarea id="textInput" rows="4" placeholder="כתוב כאן מה תרצה שהמודל יגיד..."></textarea>
+
+    <button id="generateBtn">צור קובץ שמע להורדה</button>
+    
+    <div id="status"></div>
+</div>
+
+<script>
+    // פונקציית עזר ליצירת כותרת WAV בפורמט 8000Hz (בדיוק כמו בגרסה שעבדה)
+    function createWavHeader(dataLength, sampleRate) {
+        const buffer = new ArrayBuffer(44);
+        const view = new DataView(buffer);
+
+        view.setUint32(0, 0x52494646, false); // "RIFF"
+        view.setUint32(4, 36 + dataLength, true);
+        view.setUint32(8, 0x57415645, false); // "WAVE"
+        view.setUint32(12, 0x666d7420, false); // "fmt "
+        view.setUint32(16, 16, true);
+        view.setUint16(20, 1, true); // PCM
+        view.setUint16(22, 1, true); // Mono
+        view.setUint32(24, sampleRate, true);
+        view.setUint32(28, sampleRate * 2, true);
+        view.setUint16(32, 2, true);
+        view.setUint16(34, 16, true);
+        view.setUint32(36, 0x64617461, false); // "data"
+        view.setUint32(40, dataLength, true);
+
+        return new Uint8Array(buffer);
+    }
+
+    // פונקציית דחיסה מ-24k ל-8k (בדיוק כמו בגרסה שעבדה - דילוג על דגימות מביט 44)
+    function downsampleTo8k(inputBytes) {
+        const ratio = 3; // יחס של 24000/8000
+        const output = [];
+        // התחלה מביט 44 כדי לדלג על ה-Header המקורי שג'מיני מחזיר
+        for (let i = 44; i < inputBytes.length; i += (2 * ratio)) {
+            if (i + 1 < inputBytes.length) {
+                output.push(inputBytes[i]);
+                output.push(inputBytes[i+1]);
+            }
+        }
+        return new Uint8Array(output);
+    }
+
+    document.getElementById('generateBtn').addEventListener('click', async () => {
+        const apiKey = document.getElementById('apiKey').value;
+        const selectedModel = document.getElementById('modelSelect').value; // שליפת המודל שנבחר
+        const voiceDesc = document.getElementById('voiceDesc').value || "קול ברור";
+        const text = document.getElementById('textInput').value;
+        const status = document.getElementById('status');
+        const btn = document.getElementById('generateBtn');
+
+        if (!apiKey || !text) {
+            alert('אנא מלא מפתח API וטקסט להקראה');
+            return;
+        }
+
+        status.innerText = 'מייצר שמע ב-Gemini...';
+        btn.disabled = true;
+
+        try {
+            // שימוש במשתנה המודל בכתובת ה-API
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${apiKey}`;
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ 
+                        // שילוב תיאור הקול בתוך הטקסט בצורה שתנחה את המודל בלי לשבור את הקידוד
+                        parts: [{ text: `Please read the following text in a ${voiceDesc} style. Text: ${text}` }] 
+                    }],
+                    generationConfig: {
+                        responseModalities: ["AUDIO"],
+                        speechConfig: {
+                            voiceConfig: { prebuiltVoiceConfig: { voiceName: "Puck" } }
+                        }
+                    }
+                })
+            });
+
+            const data = await response.json();
+            
+            if (data.error) throw new Error(data.error.message);
+
+            const base64Audio = data.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+            if (!base64Audio) throw new Error('לא התקבלו נתוני שמע מהמודל');
+
+            // המרה למערך בייטים גולמי
+            const binaryString = window.atob(base64Audio);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+
+            // שלב העיבוד הגרפי שהוכח כעובד בגרסה הקודמת
+            const pcm8k = downsampleTo8k(bytes);
+            const header = createWavHeader(pcm8k.length, 8000);
+
+            // בניית הקובץ הסופי
+            const finalWav = new Uint8Array(header.length + pcm8k.length);
+            finalWav.set(header);
+            finalWav.set(pcm8k, header.length);
+
+            // יצירת קישור להורדה
+            const blob = new Blob([finalWav], { type: 'audio/wav' });
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = `voice_8k_${Date.now()}.wav`;
+            a.click();
+            
+            status.innerText = 'הקובץ נוצר בקידוד 8k והורד בהצלחה!';
+        } catch (error) {
+            status.innerText = 'שגיאה: ' + error.message;
+        } finally {
+            btn.disabled = false;
+        }
+    });
+</script>
+
+</body>
+</html>
