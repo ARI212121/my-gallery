@@ -5,38 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>מערכת ניהול - הגלריה שלי</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; padding: 20px; background-color: #f4f4f9; color: #333; margin: 0; }
-        .container { max-width: 800px; margin: 40px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #2c3e50; font-size: 28px; border-bottom: 2px solid #eee; padding-bottom: 15px; }
+        body { font-family: 'Segoe UI', sans-serif; padding: 20px; background-color: #f0f2f5; color: #333; margin: 0; }
+        .container { max-width: 900px; margin: 40px auto; background: white; padding: 40px; border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #2c3e50; font-size: 32px; border-bottom: 3px solid #3498db; padding-bottom: 15px; display: inline-block; margin-bottom: 30px;}
+        .header-center { text-align: center; }
+        
+        .upload-section { background: #f8f9fa; padding: 25px; border-radius: 12px; border: 2px dashed #bdc3c7; margin-bottom: 40px; }
         .input-group { margin-bottom: 20px; }
-        input[type="text"], input[type="file"], button { 
+        input[type="text"], input[type="file"] { 
             display: block; width: 100%; padding: 15px; 
             box-sizing: border-box; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; transition: border-color 0.3s;
         }
-        input[type="text"]:focus { border-color: #3498db; outline: none; }
-        button { background-color: #27ae60; color: white; border: none; cursor: pointer; font-weight: bold; font-size: 18px; margin-top: 10px; }
-        button:hover { background-color: #219653; }
-        #loader { display: none; background-color: #e8f8f5; color: #16a085; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 15px; font-weight: bold; border: 1px solid #1abc9c; }
-        iframe { width: 100%; height: 600px; border: 2px solid #ddd; margin-top: 20px; border-radius: 8px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); }
+        input[type="text"]:focus { border-color: #3498db; outline: none; box-shadow: 0 0 8px rgba(52,152,219,0.3); }
+        
+        button.btn-upload { background-color: #2ecc71; color: white; border: none; cursor: pointer; font-weight: bold; font-size: 18px; padding: 15px; width: 100%; border-radius: 8px; transition: all 0.3s; }
+        button.btn-upload:hover { background-color: #27ae60; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(46,204,113,0.4); }
+        
+        #loader { display: none; background-color: #e8f8f5; color: #16a085; padding: 15px; border-radius: 8px; text-align: center; margin-top: 15px; font-weight: bold; border: 1px solid #1abc9c; }
+        
+        /* אזור מחיקת קבצים */
+        .manage-section { background: #fff; padding: 20px; border-radius: 12px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); border: 1px solid #eee; }
+        .file-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; transition: background 0.3s; }
+        .file-item:hover { background: #fdfdfd; }
+        .file-info { font-size: 16px; font-weight: 500; }
+        .btn-delete { background-color: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: background 0.3s; }
+        .btn-delete:hover { background-color: #c0392b; }
+
+        hr { border:0; border-top:2px solid #eee; margin:40px 0; }
+        iframe { width: 100%; height: 600px; border: 3px solid #ecf0f1; margin-top: 20px; border-radius: 12px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>לוח בקרה - מנהל מערכת ⚙️</h2>
-    
-    <div class="input-group">
-        <input type="text" id="projectName" placeholder="שם הפרויקט (למשל: אתר הראווה שלי)">
-    </div>
-    <div class="input-group">
-        <input type="file" id="fileInput">
+    <div class="header-center">
+        <h2>לוח בקרה - מנהל מערכת ⚙️</h2>
     </div>
     
-    <button onclick="uploadData()">העלה קובץ לשרת</button>
-    <br>
-    <div id="loader">מכווץ ומעלה קובץ... 🚀 זה ייקח רגע</div>
+    <div class="upload-section">
+        <h3 style="margin-top:0; color: #34495e;">העלאת קובץ חדש 🚀</h3>
+        <div class="input-group">
+            <input type="text" id="projectName" placeholder="שם הפרויקט (למשל: תיקיית עבודות)">
+        </div>
+        <div class="input-group">
+            <input type="file" id="fileInput">
+        </div>
+        <button class="btn-upload" onclick="uploadData()">העלה לשרת</button>
+        <div id="loader">מכווץ ומעלה קובץ... ⏳ נא להמתין</div>
+    </div>
 
-    <hr style="border:0; border-top:1px solid #eee; margin:30px 0;">
+    <div class="manage-section">
+        <h3 style="margin-top:0; color: #e74c3c;">ניהול ומחיקת קבצים קיימים 🗑️</h3>
+        <div id="fileManagerList">טוען קבצים...</div>
+    </div>
+
+    <hr>
+    
     <h3 style="color: #7f8c8d;">תצוגה מקדימה לאתר הלקוחות:</h3>
     <iframe id="sitePreview" src="index.html"></iframe>
 </div>
@@ -45,6 +69,36 @@
 // --- החלף כאן בכתובת השרת! ---
 const gasUrl = 'https://script.google.com/macros/s/AKfycbzhQ3D6LYDGmN2-WgfBSyBcQuzu6nLdxE4VmFRT2anbmzz5SU9RnTlEBEXDFxw2CS_e/exec';
 
+// טעינת הקבצים בעת פתיחת הדף למטרת מחיקה
+async function loadManagerFiles() {
+    const listDiv = document.getElementById('fileManagerList');
+    try {
+        const response = await fetch(gasUrl);
+        const data = await response.json();
+        
+        if(data.length === 0) {
+            listDiv.innerHTML = 'אין קבצים במערכת כרגע.';
+            return;
+        }
+
+        listDiv.innerHTML = ''; // מנקה את הטקסט "טוען"
+        
+        // מסדר את הרשימה מהחדש לישן
+        data.reverse().forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'file-item';
+            div.innerHTML = `
+                <div class="file-info">📁 ${item.projectName} | 📄 ${item.fileName}</div>
+                <button class="btn-delete" onclick="deleteFile('${item.githubPath}', ${item.rowIndex})">מחק קובץ</button>
+            `;
+            listDiv.appendChild(div);
+        });
+    } catch (error) {
+        listDiv.innerHTML = '❌ שגיאה בטעינת רשימת הקבצים.';
+    }
+}
+
+// פונקציית העלאה
 async function uploadData() {
     const projectName = document.getElementById('projectName').value;
     const fileInput = document.getElementById('fileInput');
@@ -96,12 +150,40 @@ async function uploadData() {
             if(data.status === "success") {
                 alert('✅ הועלה בהצלחה!');
                 document.getElementById('fileInput').value = '';
-                refreshPreview();
+                loadManagerFiles(); // מרענן את רשימת המחיקה
+                refreshPreview();   // מרענן את התצוגה המקדימה
             } else { throw new Error(data.message); }
         } catch (err) { alert('❌ שגיאה בהעלאה: ' + err.message); }
         document.getElementById('loader').style.display = 'none';
     };
     reader.readAsDataURL(file);
+}
+
+// פונקציית המחיקה החדשה שעובדת מול השרת הקיים!
+async function deleteFile(githubPath, rowIndex) {
+    if(!confirm('האם אתה בטוח שברצונך למחוק את הקובץ? הפעולה הזו תמחק אותו מ-GitHub ומגיליון הנתונים.')) {
+        return; // אם המשתמש ביטל
+    }
+
+    const formData = new URLSearchParams();
+    formData.append('action', 'delete');
+    formData.append('githubPath', githubPath);
+    formData.append('rowIndex', rowIndex);
+
+    try {
+        const response = await fetch(gasUrl, { method: 'POST', body: formData });
+        const data = await response.json();
+        
+        if(data.status === "success") {
+            alert('🗑️ נמחק בהצלחה!');
+            loadManagerFiles(); // מרענן את רשימת המחיקה
+            refreshPreview();   // מרענן את התצוגה המקדימה
+        } else {
+            alert('❌ שגיאה במחיקה: ' + data.message);
+        }
+    } catch (err) {
+        alert('❌ שגיאת תקשורת במחיקה.');
+    }
 }
 
 function refreshPreview() { 
@@ -110,6 +192,9 @@ function refreshPreview() {
         preview.src = 'index.html?t=' + new Date().getTime(); 
     }
 }
+
+// מריץ את הטעינה כשפותחים את הדף
+window.onload = loadManagerFiles;
 </script>
 </body>
 </html>
