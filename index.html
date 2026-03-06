@@ -35,7 +35,7 @@
         gap: 30px;
     }
     
-    /* עיצוב הכרטיסיות המתקדם */
+    /* עיצוב הכרטיסיות - קל ומהיר למחשב */
     .item-card {
         background: #ffffff;
         border-radius: 16px;
@@ -44,36 +44,33 @@
         cursor: pointer;
         display: flex; flex-direction: column; align-items: center; justify-content: space-between;
         position: relative;
-        overflow: hidden;
-        border: none;
-        box-shadow: 5px 5px 15px rgba(0,0,0,0.05), -5px -5px 15px rgba(255,255,255,0.8);
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        /* מסגרת שקופה שמתכוננת להופיע בהמשך */
+        border: 2px solid transparent;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        /* אנימציה ספציפית וקלה רק לתכונות שמשתנות, מונע תקיעות */
+        transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        /* מכין את כרטיס המסך מראש */
+        will-change: transform, box-shadow, border-color;
     }
     
-    /* אפקט האור החולף (Shine) */
-    .item-card::before {
-        content: ""; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
-        background: linear-gradient(to right, transparent, rgba(255,255,255,0.8), transparent);
-        transform: skewX(-25deg); transition: all 0.7s ease; z-index: 1;
-    }
-    
-    /* מה קורה במעבר עכבר */
+    /* מה קורה במעבר עכבר - אלגנטי, מודגש ולא מכביד */
     .item-card:hover {
-        transform: translateY(-12px) scale(1.03);
-        box-shadow: 0 20px 30px rgba(26, 188, 156, 0.2);
-    }
-    .item-card:hover::before {
-        left: 150%; /* מריץ את פס האור */
+        /* ריחוף קל במקום הגדלה */
+        transform: translateY(-8px);
+        /* מסגרת בולטת ויפה כמו שביקשת */
+        border-color: #1abc9c;
+        /* צל עמוק שנותן אפקט של זוהר (Glow) */
+        box-shadow: 0 15px 25px rgba(26, 188, 156, 0.25);
     }
 
     .item-image {
         max-width: 100%; height: 140px; object-fit: cover;
-        border-radius: 10px; margin-bottom: 15px; z-index: 2; position: relative;
+        border-radius: 10px; margin-bottom: 15px;
     }
     .html-preview-container {
         width: 100%; height: 140px; overflow: hidden;
         border-radius: 10px; margin-bottom: 15px; position: relative;
-        border: 2px solid #ecf0f1; background: #fafafa; z-index: 2;
+        border: 2px solid #ecf0f1; background: #fafafa;
     }
     .html-preview-container iframe {
         width: 400%; height: 400%; border: none;
@@ -81,15 +78,15 @@
         pointer-events: none;
     }
     .file-icon {
-        font-size: 60px; margin-bottom: 15px; color: #95a5a6; z-index: 2; position: relative;
+        font-size: 60px; margin-bottom: 15px; color: #95a5a6;
     }
     .item-name {
-        font-size: 16px; font-weight: bold; color: #34495e; z-index: 2; position: relative;
+        font-size: 16px; font-weight: bold; color: #34495e;
         word-break: break-all;
     }
     .click-indicator {
         margin-top: 10px; font-size: 12px; color: #1abc9c; font-weight: bold;
-        opacity: 0; transition: opacity 0.3s; z-index: 2; position: relative;
+        opacity: 0; transition: opacity 0.3s;
     }
     .item-card:hover .click-indicator { opacity: 1; }
     
@@ -159,7 +156,6 @@ async function loadProjects() {
                 const isImage = item.fileName.match(/\.(jpeg|jpg|gif|png|webp)$/i) != null;
                 const isHtml = item.fileName.match(/\.(html|htm)$/i) != null;
                 
-                // לחיצה על כל הכרטיסייה פותחת את הקובץ או המודל
                 card.onclick = () => {
                     if (isImage) {
                         openModal(item.fileUrl, item.fileName);
