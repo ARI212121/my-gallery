@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <title>מערכת שאיבה, תרגום וחיפוש חכמה</title>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #2563eb; --success: #059669; --bg: #f1f5f9; --surface: #ffffff; --secondary: #64748b;}
+        body { font-family: 'Heebo', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        .container { background: var(--surface); padding: 30px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); max-width: 900px; margin: auto; }
+        .tabs { display: flex; gap: 15px; margin-bottom: 25px; border-bottom: 2px solid #e2e8f0; }
+        .tab-btn { padding: 12px 25px; border: none; background: none; cursor: pointer; font-weight: bold; font-size: 16px; color: #64748b; transition: 0.3s; }
+        .tab-btn.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s; }
+        
+        input[type="url"], input[type="text"], textarea { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #cbd5e1; border-radius: 8px; font-family: inherit; box-sizing: border-box; font-size: 16px; }
+        .action-btn { flex: 1; padding: 15px; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 10px; transition: opacity 0.2s; }
+        .action-btn:hover { opacity: 0.9; }
+        .btn-blue { background: var(--primary); }
+        .btn-green { background: var(--success); }
+        
+        .status-box { margin-top: 20px; padding: 15px; border-radius: 8px; background: #e0e7ff; text-align: center; font-weight: bold; display: none; align-items: center; justify-content: center; gap: 10px; }
+        .spinner { width: 20px; height: 20px; border: 3px solid rgba(37, 99, 235, 0.2); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; display: none; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        #previewContainer { margin-top: 30px; border: 2px solid #cbd5e1; border-radius: 10px; overflow: hidden; display: none; }
+        .preview-bar { background: #cbd5e1; padding: 10px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
+        iframe { width: 100%; height: 600px; border: none; background: white; }
+        
+        .dl-btn { display: none; width: 100%; background: var(--secondary); color: white; padding: 15px; text-align: center; text-decoration: none; border-radius: 8px; margin-top: 15px; font-weight: bold; box-sizing: border-box; }
+        .top-row { display: flex; gap: 10px; align-items: center; }
+        #back_btn { display: none; padding: 12px 20px; background: var(--secondary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; white-space: nowrap; }
+
+        .search-result { background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px; transition: 0.2s; }
+        .search-result:hover { border-color: var(--primary); background: #f1f5f9; }
+        .search-title { font-size: 18px; color: #1a0dab; font-weight: bold; text-decoration: none; cursor: pointer; display: block; margin-bottom: 5px; }
+        .search-title:hover { text-decoration: underline; }
+        .search-url { font-size: 13px; color: #006621; margin-bottom: 5px; direction: ltr; text-align: left; }
+        .search-snippet { font-size: 14px; color: #4d5156; line-height: 1.5; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('downloader', this)">גלישה והורדה</button>
+        <button class="tab-btn" onclick="switchTab('search_tab', this)">חיפוש בגוגל</button>
+        <button class="tab-btn" onclick="switchTab('standalone', this)">תרגום טקסט חופשי</button>
+    </div>
+
+    <div id="downloader" class="tab-content active">
+        <h2>מערכת שאיבה וגלישה בטוחה</h2>
+        <div class="top-row">
+            <button id="back_btn" onclick="goBack()">⬅ חזור אחורה</button>
+            <input type="url" id="target_url" placeholder="הכנס כתובת אתר או קישור ישיר לקובץ..." dir="ltr">
+        </div>
+        <div style="margin: 10px 0;">
+            <label><input type="checkbox" id="translate_check"> תרגם את תוכן העמוד לעברית (מנוע פנימי מתקדם - לא פוגע בעיצוב!)</label>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button class="action-btn btn-blue" onclick="process('site', false)">🌐 הצג כאתר</button>
+            <button class="action-btn btn-green" onclick="process('site', true)">📥 הורד קובץ למחשב</button>
+        </div>
+    </div>
+
+    <div id="search_tab" class="tab-content">
+        <h2>חיפוש רשת מובנה</h2>
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="search_query" placeholder="הכנס מילות חיפוש (למשל: ויקיפדיה עברית)..." onkeydown="if(event.key === 'Enter') performSearch()">
+            <button class="action-btn btn-blue" style="margin-top: 10px; flex: 0.3;" onclick="performSearch()">🔍 חפש</button>
+        </div>
+        <div id="search_results_container" style="margin-top: 20px;"></div>
+    </div>
+
+    <div id="standalone" class="tab-content">
+        <h2>תרגום טקסט ארוך</h2>
+        <textarea id="free_text" placeholder="הדבק כאן טקסט ארוך לתרגום..." rows="5"></textarea>
+        <button class="action-btn btn-blue" onclick="process('text', false)">תרגם לעברית</button>
+    </div>
+
+    <div id="status" class="status-box">
+        <div id="loading_spinner" class="spinner"></div>
+        <span id="status_text"></span>
+    </div>
+    
+    <a id="download_link" class="dl-btn" href="#">💾 שמור את ה-HTML למחשב</a>
+
+    <div id="previewContainer">
+        <div class="preview-bar">
+            <span>תצוגה מקדימה - גלישה רציפה</span>
+            <span style="color:red; cursor:pointer;" onclick="this.parentElement.parentElement.style.display='none'">סגור X</span>
+        </div>
+        <iframe id="preview_frame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+    </div>
+</div>
+
+<script>
+    // === הדבק כאן את כתובת ה-Web App שלך מגוגל סקריפט ===
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxqeiFkZpmUl0qkei-x2JW7nBMa834J2R4MOcGT_NscEwPY8kbxsjkdnA1X29DTzTGg/exec";
+
+    let resultStore = "";
+    let urlHistory = []; 
+
+    function switchTab(id, btn) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        btn.classList.add('active');
+    }
+
+    const enc = (s) => btoa(unescape(encodeURIComponent(s)));
+    const dec = (s) => decodeURIComponent(escape(atob(s)));
+
+    async function server(data) {
+        const response = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) });
+        return response.json();
+    }
+
+    window.loadNewUrl = function(newUrl) {
+        document.querySelector('.tab-btn').click(); 
+        
+        const currentUrl = document.getElementById('target_url').value;
+        if(currentUrl && currentUrl !== newUrl) {
+            urlHistory.push(currentUrl);
+            document.getElementById('back_btn').style.display = 'block';
+        }
+        document.getElementById('target_url').value = newUrl;
+        process('site', false); 
+    };
+
+    window.goBack = function() {
+        if(urlHistory.length > 0) {
+            const prevUrl = urlHistory.pop();
+            document.getElementById('target_url').value = prevUrl;
+            if(urlHistory.length === 0) {
+                document.getElementById('back_btn').style.display = 'none';
+            }
+            process('site', false);
+        }
+    };
+
+    async function performSearch() {
+        const query = document.getElementById('search_query').value.trim();
+        if(!query) return;
+        
+        const resultsContainer = document.getElementById('search_results_container');
+        resultsContainer.innerHTML = "";
+        
+        showStatus("מחפש ברשת... אנא המתן", false, true);
+        
+        try {
+            const res = await server({ action: "search", query: query });
+            if(res.error) throw new Error(res.error);
+            
+            if(res.items && res.items.length > 0) {
+                let html = "";
+                res.items.forEach(item => {
+                    html += `
+                    <div class="search-result">
+                        <a class="search-title" onclick="loadNewUrl('${item.link}')">${item.title}</a>
+                        <div class="search-url">${item.link}</div>
+                        <div class="search-snippet">${item.snippet}</div>
+                    </div>`;
+                });
+                resultsContainer.innerHTML = html;
+            } else {
+                resultsContainer.innerHTML = `<div style="text-align: center; color: #64748b; font-size: 18px; margin-top: 20px;">לא נמצאו תוצאות עבור החיפוש הזה.</div>`;
+            }
+            showStatus("החיפוש הושלם!", false, false);
+        } catch(e) {
+            showStatus(e.message, true, false);
+        }
+    }
+
+    async function translateAll(text) {
+        const CHUNK_SIZE = 3800;
+        const chunks = [];
+        for (let i = 0; i < text.length; i += CHUNK_SIZE) { chunks.push(text.substring(i, i + CHUNK_SIZE)); }
+        const results = new Array(chunks.length);
+        const LIMIT = 30;
+        for (let i = 0; i < chunks.length; i += LIMIT) {
+            const batch = chunks.slice(i, i + LIMIT).map((c, idx) => {
+                return server({ action: "translate", text: enc(c) }).then(res => {
+                    if(res.content) results[i + idx] = dec(res.content);
+                }).catch(err => { results[i + idx] = ""; });
+            });
+            await Promise.all(batch);
+            showStatus(`מתרגם טקסט... ${Math.round(((i + batch.length) / chunks.length) * 100)}%`, false, true);
+        }
+        return results.join('');
+    }
+
+    async function translateHTMLSmart(htmlString) {
+        showStatus("מנתח את מבנה האתר לתרגום...", false, true);
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlString, 'text/html');
+        const walker = document.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT, {
+            acceptNode: function(node) {
+                const tag = node.parentNode.tagName;
+                if (['SCRIPT', 'STYLE', 'NOSCRIPT', 'CODE', 'PRE'].includes(tag)) return NodeFilter.FILTER_REJECT;
+                if (node.nodeValue.trim().length < 2) return NodeFilter.FILTER_REJECT;
+                if (!/[a-zA-Zא-ת]/.test(node.nodeValue)) return NodeFilter.FILTER_REJECT;
+                return NodeFilter.FILTER_ACCEPT;
+            }
+        });
+
+        const textNodes = [];
+        let n;
+        while ((n = walker.nextNode())) textNodes.push(n);
+        if (textNodes.length === 0) return htmlString;
+
+        const BATCH_SIZE = 40; 
+        const DELIMITER = "<br>"; 
+        const textarea = document.createElement('textarea');
+
+        for (let i = 0; i < textNodes.length; i += BATCH_SIZE) {
+            const batch = textNodes.slice(i, i + BATCH_SIZE);
+            const texts = batch.map(node => node.nodeValue.replace(/<|>/g, ' ')); 
+            const combined = texts.join(DELIMITER);
+
+            try {
+                const res = await server({ action: "translate", text: enc(combined) });
+                if (res.content) {
+                    const translatedText = dec(res.content);
+                    const translatedParts = translatedText.split(/<br\s*\/?>/i);
+                    for (let j = 0; j < Math.min(batch.length, translatedParts.length); j++) {
+                        if (translatedParts[j]) {
+                            textarea.innerHTML = translatedParts[j]; 
+                            batch[j].nodeValue = textarea.value.trim();
+                        }
+                    }
+                }
+            } catch(e) { console.error("Batch translate error", e); }
+            showStatus(`מתרגם בזהירות בלי לשבור עיצוב... ${Math.round(((i + batch.length) / textNodes.length) * 100)}%`, false, true);
+        }
+        return "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+    }
+
+    function showStatus(msg, isError = false, isLoading = false) {
+        const box = document.getElementById('status');
+        const textSpan = document.getElementById('status_text');
+        const spinner = document.getElementById('loading_spinner');
+        box.style.display = 'flex';
+        box.style.background = isError ? '#fee2e2' : '#e0e7ff';
+        box.style.color = isError ? '#991b1b' : 'black';
+        textSpan.innerText = msg;
+        spinner.style.display = isLoading ? 'inline-block' : 'none';
+        if(isLoading) spinner.style.borderTopColor = isError ? '#991b1b' : 'var(--primary)';
+    }
+
+    async function process(mode, isDownloadMode) {
+        const dl = document.getElementById('download_link');
+        const preview = document.getElementById('previewContainer');
+        dl.style.display = 'none';
+        showStatus("מתקשר לשרת, אנא המתן...", false, true);
+
+        try {
+            if (mode === 'site') {
+                const url = document.getElementById('target_url').value;
+                if(!url) throw new Error("נא להזין כתובת אתר או קובץ");
+                
+                if (isDownloadMode) {
+                    showStatus("מחשב את גודל הקובץ למשיכה חכמה...", false, true);
+                    
+                    const infoRes = await server({ action: "get_file_size", url: url });
+                    if (infoRes.error) throw new Error(infoRes.error);
+                    
+                    const totalBytes = infoRes.size;
+                    if (totalBytes === 0) throw new Error("השרת המרוחק לא תומך בהורדה בחלקים (חסר משקל קובץ).");
+
+                    const fileName = infoRes.fileName || "downloaded_file";
+                    
+                    showStatus("מחפש או יוצר תיקייה בדרייב...", false, true);
+                    const folderRes = await server({ action: "create_drive_folder", folderName: fileName });
+                    if (folderRes.error) throw new Error(folderRes.error);
+                    const folderId = folderRes.folderId;
+                    
+                    if (folderRes.status === 'existing') {
+                        showStatus(`נמצאה תיקייה קיימת '${fileName}', ממשיך מאותה נקודה...`, false, true);
+                    }
+
+                    const CHUNK_SIZE = 49 * 1024 * 1024; // 49MB כפי שביקשת
+                    let downloadedBytes = 0;
+                    let partIndex = 1;
+
+                    for (let start = 0; start < totalBytes; start += CHUNK_SIZE) {
+                        let end = Math.min(start + CHUNK_SIZE - 1, totalBytes - 1);
+                        let percent = Math.round((downloadedBytes / totalBytes) * 100);
+                        let expectedChunkSize = end - start + 1; // חישוב המשקל המדויק של החתיכה הזו
+                        
+                        showStatus(`שומר לתיקייה '${fileName}'... חלק ${partIndex} (${percent}% הושלמו)`, false, true);
+                        
+                        const chunkRes = await server({ 
+                            action: "save_chunk_to_drive", 
+                            url: url, 
+                            start: start, 
+                            end: end,
+                            partIndex: partIndex,
+                            fileName: fileName,
+                            folderId: folderId,
+                            expectedSize: expectedChunkSize // משדרים לשרת מה המשקל הצפוי
+                        });
+                        
+                        if (chunkRes.error) throw new Error(chunkRes.error);
+                        
+                        // עדכון מסך אם הקובץ דולג
+                        if (chunkRes.skipped) {
+                            showStatus(`החלק ה-${partIndex} נמצא בתיקייה תקין במלואו, מדלג...`, false, true);
+                        }
+                        
+                        downloadedBytes += expectedChunkSize;
+                        partIndex++;
+                    }
+
+                    showStatus(`הסתיים! ${partIndex - 1} חלקים נשמרו בדרייב בתוך התיקייה '${fileName}'.`, false, false);
+                    return;
+                }
+
+                showStatus(`שואב את: ${url}...`, false, true);
+                const fetchRes = await server({ action: "fetch_page", url: url, forceDownload: false });
+                if(fetchRes.error) throw new Error(fetchRes.error);
+
+                resultStore = dec(fetchRes.content);
+                const targetOrigin = new URL(url).origin;
+
+                resultStore = resultStore.replace(/(href|src|srcset)=["']\/\//gi, '$1="https://');
+                resultStore = resultStore.replace(/(href|src|srcset|action)=["']\/(?!\/)([^"']*)["']/gi, `$1="${targetOrigin}/$2"`);
+                resultStore = resultStore.replace(/data-(?:src|lazy|original)=["']([^"']+)["']/gi, 'src="$1"');
+                resultStore = resultStore.replace(/url\(['"]?\/(?!\/)([^'"\)]*)['"]?\)/gi, `url("${targetOrigin}/$1")`);
+                resultStore = resultStore.replace(/<meta[^>]*http-equiv=["']?Content-Security-Policy["']?[^>]*>/gi, '');
+
+                if (document.getElementById('translate_check').checked) {
+                    resultStore = await translateHTMLSmart(resultStore);
+                }
+
+                const baseTag = `<base href="${url}">`;
+                let injectionScript = `
+                <script>
+                    const TARGET_ORIGIN = "${targetOrigin}";
+                    const observer = new MutationObserver(mutations => {
+                        mutations.forEach(mutation => {
+                            mutation.addedNodes.forEach(node => {
+                                if (node.tagName === 'LINK' && node.getAttribute('href') && node.getAttribute('href').startsWith('/')) {
+                                    node.href = TARGET_ORIGIN + node.getAttribute('href');
+                                }
+                                if (node.tagName === 'SCRIPT' && node.getAttribute('src') && node.getAttribute('src').startsWith('/')) {
+                                    node.src = TARGET_ORIGIN + node.getAttribute('src');
+                                }
+                            });
+                        });
+                    });
+                    observer.observe(document.documentElement, { childList: true, subtree: true });
+
+                    document.addEventListener('click', function(e) {
+                        const link = e.target.closest('a');
+                        if (link && link.href && !link.href.startsWith('javascript:')) {
+                            e.preventDefault();
+                            window.parent.loadNewUrl(link.href);
+                        }
+                    });
+                <\/script>`;
+
+                const headMatch = resultStore.match(/<head[^>]*>/i);
+                if(headMatch) {
+                     resultStore = resultStore.replace(headMatch[0], headMatch[0] + baseTag + injectionScript);
+                } else {
+                     resultStore = baseTag + injectionScript + resultStore;
+                }
+
+                showStatus("טוען את הדף המלא...", false, true);
+
+                preview.style.display = 'block';
+                const oldFrame = document.getElementById('preview_frame');
+                const newFrame = document.createElement('iframe');
+                newFrame.id = 'preview_frame';
+                newFrame.sandbox = "allow-scripts allow-same-origin allow-forms allow-popups";
+                oldFrame.replaceWith(newFrame);
+                
+                const doc = newFrame.contentWindow.document;
+                doc.open();
+                doc.write(resultStore);
+                doc.close();
+
+                const blobHtml = new Blob([resultStore], { type: 'text/html;charset=utf-8' });
+                dl.href = URL.createObjectURL(blobHtml);
+                dl.download = "downloaded_site.html";
+                dl.style.display = 'block';
+                
+                showStatus("הסתיים בהצלחה!", false, false);
+
+            } else {
+                const txt = document.getElementById('free_text').value;
+                if(!txt) throw new Error("נא להזין טקסט");
+                showStatus("מתרגם טקסט...", false, true);
+                resultStore = await translateAll(txt);
+                resultStore = `<div style="direction:rtl; font-family:Heebo,sans-serif; padding:30px;">${resultStore.replace(/\n/g, '<br>')}</div>`;
+                preview.style.display = 'block';
+                const oldFrame = document.getElementById('preview_frame');
+                const newFrame = document.createElement('iframe');
+                newFrame.id = 'preview_frame';
+                newFrame.sandbox = "allow-scripts allow-same-origin";
+                oldFrame.replaceWith(newFrame);
+                const doc = newFrame.contentWindow.document;
+                doc.open();
+                doc.write(resultStore);
+                doc.close();
+                showStatus("הסתיים בהצלחה!", false, false);
+            }
+
+        } catch (e) {
+            showStatus("שגיאה: " + e.message, true, false);
+        }
+    }
+</script>
+
+</body>
+</html>
