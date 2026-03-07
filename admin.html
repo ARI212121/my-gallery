@@ -11,7 +11,6 @@
         h2 { text-align: center; color: var(--dark); border-bottom: 3px solid var(--primary); padding-bottom: 10px; display: inline-block; margin-bottom: 20px; }
         .header-center { text-align: center; }
         
-        /* Tabs */
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #ddd; padding-bottom: 10px; flex-wrap: wrap; }
         .tab { padding: 10px 20px; background: #eee; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
         .tab.active { background: var(--primary); color: white; }
@@ -34,34 +33,32 @@
         
         #loader { display: none; background-color: #e8f8f5; color: #16a085; padding: 15px; border-radius: 8px; text-align: center; margin-top: 15px; font-weight: bold; border: 1px solid #1abc9c; }
         
-        /* Folders List */
         .folder-group { background: #fff; border: 1px solid #eee; margin-bottom: 15px; border-radius: 8px; overflow: hidden; }
         .folder-header { background: #ecf0f1; padding: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 18px; }
         .file-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; border-bottom: 1px solid #eee; background: #fafafa; }
-        .file-info { font-size: 15px; }
         
         iframe { width: 100%; height: 600px; border: 3px solid #ecf0f1; margin-top: 20px; border-radius: 12px; }
         .hint { font-size: 12px; color: #7f8c8d; margin-top: 4px; display: block; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+        .theme-btn { background: #95a5a6; margin-bottom: 15px; width: 100%; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header-center">
-        <h2>מערכת ניהול אתר ⚙️</h2>
-    </div>
+    <div class="header-center"><h2>מערכת ניהול מורחבת ⚙️</h2></div>
     
     <div class="tabs">
         <div class="tab active" onclick="switchTab('upload')">העלאת קבצים</div>
-        <div class="tab" onclick="switchTab('links')">יצירת חלוניות טקסט/קישור</div>
+        <div class="tab" onclick="switchTab('links')">חלוניות טקסט מתקדמות</div>
         <div class="tab" onclick="switchTab('manage')">ניהול ומחיקה</div>
-        <div class="tab" onclick="switchTab('settings')">הגדרות עיצוב וטקסט</div>
+        <div class="tab" onclick="switchTab('settings')">עיצוב, גדלים ואנימציות</div>
     </div>
 
     <!-- העלאת קבצים -->
     <div id="upload" class="tab-content active section-box">
-        <h3>העלאת קובץ חדש</h3>
+        <h3>העלאת קובץ חדש (תומך בתתי-תיקיות אינסופיות)</h3>
         <div class="grid-2">
             <div class="input-group">
                 <label>תיקייה ראשית</label>
@@ -69,8 +66,7 @@
             </div>
             <div class="input-group">
                 <label>תת-תיקייה (אופציונלי)</label>
-                <input type="text" id="subFolder" placeholder="למשל: חורף 2025">
-                <span class="hint">ניתן גם לעשות רמות נוספות בעזרת לוכסן: חורף/תמונות/ערב</span>
+                <input type="text" id="subFolder" placeholder="למשל: חורף 2025/ערב">
             </div>
         </div>
         <div class="input-group">
@@ -81,32 +77,18 @@
             <label>בחירת קובץ (תמונה, HTML, PDF וכו')</label>
             <input type="file" id="fileInput">
         </div>
-        <button class="btn-success" onclick="uploadData()">העלה קובץ לשרת</button>
-        <div id="loader">מבצע פעולה... ⏳ נא להמתין</div>
+        <button class="btn-success" onclick="uploadData()">העלה לשרת</button>
     </div>
 
     <!-- הוספת חלונית טקסט -->
     <div id="links" class="tab-content section-box">
-        <h3>הוספת חלונית טקסט וקישור לאתר</h3>
-        <p class="hint">יוצר כרטיסייה מעוצבת באתר עם טקסט, שבלחיצה תוביל לקישור אחר.</p>
+        <h3>הוספת חלונית טקסט וקישור</h3>
         <div class="grid-2">
-            <div class="input-group">
-                <label>תיקייה / מיקום</label>
-                <input type="text" id="linkFolder" placeholder="למשל: קישורים שימושיים">
-            </div>
-            <div class="input-group">
-                <label>כותרת החלונית</label>
-                <input type="text" id="linkTitle" placeholder="למשל: למעבר לאתר החיצוני לחץ כאן">
-            </div>
+            <div class="input-group"><label>תיקייה / מיקום</label><input type="text" id="linkFolder" placeholder="למשל: קישורים שימושיים"></div>
+            <div class="input-group"><label>כותרת החלונית</label><input type="text" id="linkTitle" placeholder="למשל: כניסה למערכת"></div>
         </div>
-        <div class="input-group">
-            <label>קישור (URL)</label>
-            <input type="url" id="linkUrl" placeholder="https://...">
-        </div>
-        <div class="input-group">
-            <label>טקסט פירוט (אופציונלי)</label>
-            <textarea id="linkDesc" rows="3" placeholder="הסבר קצר על מה החלונית..."></textarea>
-        </div>
+        <div class="input-group"><label>קישור (URL)</label><input type="url" id="linkUrl" placeholder="https://..."></div>
+        <div class="input-group"><label>טקסט פירוט (אופציונלי)</label><textarea id="linkDesc" rows="3"></textarea></div>
         <button class="btn-success" onclick="addLinkCard()">צור חלונית באתר</button>
     </div>
 
@@ -119,52 +101,87 @@
 
     <!-- הגדרות אתר ועיצוב -->
     <div id="settings" class="tab-content section-box">
-        <h3>הגדרות עיצוב מתקדמות לאתר</h3>
-        <div class="grid-2">
+        <h3>הגדרות מתקדמות לאתר</h3>
+        
+        <div class="input-group" style="background: #e1f0fa; padding: 15px; border-radius: 8px;">
+            <label>בחר תבנית עיצוב מוכנה מראש (ידרוס את הצבעים מטה):</label>
+            <select id="s_themePreset" onchange="applyThemePreset()">
+                <option value="custom">-- עיצוב מותאם אישית (הגדרות נוכחיות) --</option>
+                <option value="classic">קלאסי ואלגנטי (כחול/לבן)</option>
+                <option value="dark">מצב לילה יוקרתי (שחור/זהב)</option>
+                <option value="vibrant">צבעוני ושמח (סגול/ורוד)</option>
+                <option value="minimal">נקי ומינימליסטי (אפור/לבן)</option>
+            </select>
+        </div>
+
+        <h4 style="border-bottom: 1px solid #ccc;">טקסטים וגופנים</h4>
+        <div class="grid-3">
+            <div class="input-group"><label>כותרת ראשית באתר</label><input type="text" id="s_title"></div>
+            <div class="input-group"><label>תת כותרת</label><input type="text" id="s_subtitle"></div>
+            <div class="input-group"><label>טקסט מסך טעינה</label><input type="text" id="s_loadingText" placeholder="טוען נתונים..."></div>
+        </div>
+        
+        <div class="grid-3">
             <div class="input-group">
-                <label>כותרת ראשית באתר</label>
-                <input type="text" id="s_title" placeholder="הגלריה המרהיבה שלי">
+                <label>גופן האתר (Font)</label>
+                <select id="s_font">
+                    <option value="'Segoe UI', sans-serif">ברירת מחדל (Segoe UI)</option>
+                    <option value="'Heebo', sans-serif">היבו (Heebo) - מודרני</option>
+                    <option value="'Rubik', sans-serif">רוביק (Rubik) - עגול ורך</option>
+                    <option value="'Assistant', sans-serif">אסיסטנט (Assistant) - נקי</option>
+                    <option value="'Varela Round', sans-serif">ורלה (Varela) - שובב</option>
+                </select>
             </div>
+            <div class="input-group"><label>גודל כותרת (px)</label><input type="number" id="s_titleSize" value="48"></div>
+            <div class="input-group"><label>גודל טקסט כרטיסיות (px)</label><input type="number" id="s_textSize" value="18"></div>
+        </div>
+
+        <h4 style="border-bottom: 1px solid #ccc; margin-top: 20px;">צבעים ומבנה</h4>
+        <div class="grid-3">
+            <div class="input-group"><label>צבע ראשי (הדגשות)</label><input type="color" id="s_mainColor"></div>
+            <div class="input-group"><label>צבע רקע האתר</label><input type="color" id="s_bg1"></div>
+            <div class="input-group"><label>צבע טקסט כללי</label><input type="color" id="s_textColor" value="#333333"></div>
+        </div>
+        
+        <div class="grid-3">
+            <div class="input-group"><label>גודל חלונות/כרטיסיות (px)</label><input type="number" id="s_cardSize" value="240"></div>
+            <div class="input-group"><label>עובי מסגרת (px)</label><input type="number" id="s_borderWidth" value="2"></div>
+            <div class="input-group"><label>עיגול פינות (px)</label><input type="number" id="s_borderRadius" value="16"></div>
+        </div>
+
+        <h4 style="border-bottom: 1px solid #ccc; margin-top: 20px;">אנימציות ואפקטים</h4>
+        <div class="grid-3">
             <div class="input-group">
-                <label>טקסט פתיחה / תיאור קצר</label>
-                <input type="text" id="s_subtitle" placeholder="ברוכים הבאים לתיק העבודות...">
-            </div>
-            <div class="input-group">
-                <label>צבע ראשי (מסגרות וכותרות)</label>
-                <input type="color" id="s_mainColor" value="#1abc9c">
-            </div>
-            <div class="input-group">
-                <label>צבע רקע (גרדיאנט - צבע התחלה)</label>
-                <input type="color" id="s_bg1" value="#f5f7fa">
-            </div>
-            <div class="input-group">
-                <label>עובי מסגרת לכרטיסיות (פיקסלים)</label>
-                <input type="range" id="s_borderWidth" min="0" max="10" value="2" oninput="document.getElementById('bw_val').innerText=this.value">
-                <span id="bw_val">2</span>px
-            </div>
-            <div class="input-group">
-                <label>עיגול פינות לכרטיסיות (פיקסלים)</label>
-                <input type="range" id="s_borderRadius" min="0" max="50" value="16" oninput="document.getElementById('br_val').innerText=this.value">
-                <span id="br_val">16</span>px
-            </div>
-            <div class="input-group">
-                <label>עוצמת צללית (Glow)</label>
-                <select id="s_shadow">
-                    <option value="none">ללא צל</option>
-                    <option value="light">עדין</option>
-                    <option value="medium" selected>בינוני</option>
-                    <option value="heavy">חזק ובולט</option>
+                <label>אנימציית ריחוף כרטיס</label>
+                <select id="s_cardAnim">
+                    <option value="float">ריחוף למעלה (Float)</option>
+                    <option value="zoom">הגדלה (Zoom In)</option>
+                    <option value="3d">סיבוב תלת מימד (3D Flip)</option>
+                    <option value="none">ללא אנימציה</option>
                 </select>
             </div>
             <div class="input-group">
-                <label>אנימציות באתר?</label>
-                <select id="s_animations">
-                    <option value="true">מופעל - אנימציות זזות כל הזמן</option>
-                    <option value="false">מכובה - יציב (ניתן להדליק מהאתר)</option>
+                <label>אנימציית כניסת טקסטים</label>
+                <select id="s_textAnim">
+                    <option value="fade">חשיפה רכה (Fade In)</option>
+                    <option value="slide">החלקה מעלה (Slide Up)</option>
+                    <option value="bounce">קפיצה (Bounce)</option>
+                    <option value="none">ללא</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>צלליות קבועות</label>
+                <select id="s_shadow">
+                    <option value="none">ללא</option>
+                    <option value="light">חלש</option>
+                    <option value="medium">בינוני</option>
+                    <option value="heavy">חזק</option>
                 </select>
             </div>
         </div>
-        <button class="btn-success" onclick="saveSettings()">שמור הגדרות עיצוב וטקסט 🎨</button>
+
+        <button class="btn-success" onclick="saveSettings()" style="margin-top: 20px;">שמור הגדרות עיצוב וטקסט 🎨</button>
+        <div id="loader">מבצע פעולה... ⏳</div>
     </div>
 
     <hr>
@@ -184,31 +201,52 @@ function switchTab(tabId) {
     document.getElementById(tabId).classList.add('active');
 }
 
-function showLoader(msg) {
-    const l = document.getElementById('loader');
-    l.innerText = msg || "מבצע פעולה...";
-    l.style.display = 'block';
-}
+function showLoader(msg) { document.getElementById('loader').innerText = msg || "מבצע..."; document.getElementById('loader').style.display = 'block'; }
 function hideLoader() { document.getElementById('loader').style.display = 'none'; }
 
-// טעינת קבצים למערכת הניהול
+const themes = {
+    classic: { bg1: '#f5f7fa', mainColor: '#3498db', textColor: '#2c3e50', border: 2, radius: 12, shadow: 'medium', font: "'Heebo', sans-serif" },
+    dark: { bg1: '#1a1a1a', mainColor: '#f39c12', textColor: '#f1f1f1', border: 1, radius: 8, shadow: 'heavy', font: "'Assistant', sans-serif" },
+    vibrant: { bg1: '#fce4ec', mainColor: '#9b59b6', textColor: '#4a235a', border: 3, radius: 24, shadow: 'light', font: "'Rubik', sans-serif" },
+    minimal: { bg1: '#ffffff', mainColor: '#000000', textColor: '#333333', border: 1, radius: 4, shadow: 'none', font: "'Segoe UI', sans-serif" }
+};
+
+function applyThemePreset() {
+    const t = document.getElementById('s_themePreset').value;
+    if(themes[t]) {
+        document.getElementById('s_bg1').value = themes[t].bg1;
+        document.getElementById('s_mainColor').value = themes[t].mainColor;
+        document.getElementById('s_textColor').value = themes[t].textColor;
+        document.getElementById('s_borderWidth').value = themes[t].border;
+        document.getElementById('s_borderRadius').value = themes[t].radius;
+        document.getElementById('s_shadow').value = themes[t].shadow;
+        document.getElementById('s_font').value = themes[t].font;
+    }
+}
+
 async function loadManagerFiles() {
     const listDiv = document.getElementById('fileManagerList');
-    listDiv.innerHTML = 'טוען נתונים מהשרת... ⏳';
+    listDiv.innerHTML = 'טוען נתונים...';
     try {
         const response = await fetch(gasUrl);
         const dataRes = await response.json();
         
-        // אתחול הגדרות לעמודת הגדרות
         if(dataRes.settings) {
-            if(dataRes.settings.title) document.getElementById('s_title').value = dataRes.settings.title;
-            if(dataRes.settings.subtitle) document.getElementById('s_subtitle').value = dataRes.settings.subtitle;
-            if(dataRes.settings.mainColor) document.getElementById('s_mainColor').value = dataRes.settings.mainColor;
-            if(dataRes.settings.bg1) document.getElementById('s_bg1').value = dataRes.settings.bg1;
-            if(dataRes.settings.borderWidth) { document.getElementById('s_borderWidth').value = dataRes.settings.borderWidth; document.getElementById('bw_val').innerText = dataRes.settings.borderWidth; }
-            if(dataRes.settings.borderRadius) { document.getElementById('s_borderRadius').value = dataRes.settings.borderRadius; document.getElementById('br_val').innerText = dataRes.settings.borderRadius; }
-            if(dataRes.settings.shadow) document.getElementById('s_shadow').value = dataRes.settings.shadow;
-            if(dataRes.settings.animations) document.getElementById('s_animations').value = dataRes.settings.animations;
+            document.getElementById('s_title').value = dataRes.settings.title || "הגלריה המרהיבה שלי";
+            document.getElementById('s_subtitle').value = dataRes.settings.subtitle || "ברוכים הבאים";
+            document.getElementById('s_loadingText').value = dataRes.settings.loadingText || "טוען את הגלריה... ✨";
+            document.getElementById('s_mainColor').value = dataRes.settings.mainColor || "#1abc9c";
+            document.getElementById('s_bg1').value = dataRes.settings.bg1 || "#f5f7fa";
+            document.getElementById('s_textColor').value = dataRes.settings.textColor || "#333333";
+            document.getElementById('s_borderWidth').value = dataRes.settings.borderWidth !== undefined ? dataRes.settings.borderWidth : 2;
+            document.getElementById('s_borderRadius').value = dataRes.settings.borderRadius !== undefined ? dataRes.settings.borderRadius : 16;
+            document.getElementById('s_shadow').value = dataRes.settings.shadow || "medium";
+            document.getElementById('s_font').value = dataRes.settings.font || "'Segoe UI', sans-serif";
+            document.getElementById('s_cardSize').value = dataRes.settings.cardSize || 240;
+            document.getElementById('s_titleSize').value = dataRes.settings.titleSize || 48;
+            document.getElementById('s_textSize').value = dataRes.settings.textSize || 18;
+            document.getElementById('s_cardAnim').value = dataRes.settings.cardAnim || "float";
+            document.getElementById('s_textAnim').value = dataRes.settings.textAnim || "fade";
         }
 
         const data = dataRes.files || [];
@@ -216,7 +254,6 @@ async function loadManagerFiles() {
         
         listDiv.innerHTML = '';
         const folders = {};
-        
         data.forEach(item => {
             if(!folders[item.projectName]) folders[item.projectName] = [];
             folders[item.projectName].push(item);
@@ -225,26 +262,18 @@ async function loadManagerFiles() {
         for(const [folderName, items] of Object.entries(folders)) {
             const grp = document.createElement('div');
             grp.className = 'folder-group';
-            grp.innerHTML = `
-                <div class="folder-header">
-                    <span>📁 תיקייה: ${folderName} (${items.length} פריטים)</span>
-                    <button class="btn-danger" onclick="deleteEntireFolder('${folderName}')">מחק תיקייה שלמה!</button>
-                </div>
-            `;
+            grp.innerHTML = `<div class="folder-header"><span>📁 ${folderName} (${items.length})</span><button class="btn-danger" onclick="deleteEntireFolder('${folderName}')">מחק תיקייה שלמה</button></div>`;
             items.reverse().forEach(item => {
-                const isLink = item.githubPath === "LINK";
-                const icon = isLink ? "🔗" : "📄";
+                const icon = item.githubPath === "LINK" ? "🔗" : "📄";
                 const row = document.createElement('div');
                 row.className = 'file-item';
-                row.innerHTML = `
-                    <div class="file-info">${icon} <b>${item.fileName}</b> <span class="hint">${item.description}</span></div>
-                    <button class="btn-danger" style="background:#e67e22;" onclick="deleteFile('${item.githubPath}', ${item.rowIndex})">מחק פריט</button>
-                `;
+                row.innerHTML = `<div class="file-info">${icon} <b>${item.fileName}</b> <span class="hint">${item.description}</span></div>
+                <button class="btn-danger" style="background:#e67e22;" onclick="deleteFile('${item.githubPath}', ${item.rowIndex})">מחק פריט</button>`;
                 grp.appendChild(row);
             });
             listDiv.appendChild(grp);
         }
-    } catch (error) { listDiv.innerHTML = '❌ שגיאה בטעינת הקבצים.'; }
+    } catch (error) { listDiv.innerHTML = '❌ שגיאה בטעינה.'; }
 }
 
 async function uploadData() {
@@ -253,9 +282,7 @@ async function uploadData() {
     const desc = document.getElementById('fileDescription').value.trim();
     const fileInput = document.getElementById('fileInput');
     
-    let projectName = mainF;
-    if(subF) projectName += "/" + subF;
-    
+    let projectName = mainF + (subF ? "/" + subF : "");
     if (!projectName || !fileInput.files[0]) { alert('חובה למלא תיקייה ולבחור קובץ!'); return; }
 
     showLoader("מעלה קובץ... נא להמתין ⏳");
@@ -266,36 +293,30 @@ async function uploadData() {
         const base64Data = e.target.result.split(',')[1];
         let thumbData = "";
         if (file.type.startsWith('image/')) {
-            const img = new Image();
-            img.src = e.target.result;
+            const img = new Image(); img.src = e.target.result;
             await new Promise(r => img.onload = r); 
             const canvas = document.createElement('canvas');
-            const MAX_WIDTH = 400; let width = img.width; let height = img.height;
-            if (width > MAX_WIDTH) { height = height * (MAX_WIDTH / width); width = MAX_WIDTH; }
+            let width = img.width, height = img.height;
+            if (width > 400) { height *= (400 / width); width = 400; }
             canvas.width = width; canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, width, height);
+            canvas.getContext('2d').drawImage(img, 0, 0, width, height);
             thumbData = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
         }
 
         const formData = new URLSearchParams();
-        formData.append('action', 'upload');
-        formData.append('projectName', projectName);
-        formData.append('fileData', base64Data);
-        formData.append('fileName', file.name);
+        formData.append('action', 'upload'); formData.append('projectName', projectName);
+        formData.append('fileData', base64Data); formData.append('fileName', file.name);
         formData.append('description', desc);
         if (thumbData) formData.append('thumbData', thumbData); 
 
         try {
-            const response = await fetch(gasUrl, { method: 'POST', body: formData });
-            const data = await response.json();
+            const res = await fetch(gasUrl, { method: 'POST', body: formData });
+            const data = await res.json();
             if(data.status === "success") {
-                alert('✅ הועלה בהצלחה!');
-                document.getElementById('fileInput').value = '';
-                document.getElementById('fileDescription').value = '';
+                alert('✅ הועלה בהצלחה!'); fileInput.value = ''; document.getElementById('fileDescription').value = '';
                 loadManagerFiles(); refreshPreview();
-            } else throw new Error(data.message);
-        } catch (err) { alert('❌ שגיאה בהעלאה: ' + err.message); }
+            }
+        } catch (err) { alert('❌ שגיאה בהעלאה.'); }
         hideLoader();
     };
     reader.readAsDataURL(file);
@@ -307,26 +328,20 @@ async function addLinkCard() {
     const url = document.getElementById('linkUrl').value.trim();
     const desc = document.getElementById('linkDesc').value.trim();
     
-    if(!folder || !title || !url) { alert("יש למלא מיקום, כותרת וקישור!"); return; }
+    if(!folder || !title || !url) return alert("יש למלא מיקום, כותרת וקישור!");
     
     showLoader("יוצר חלונית...");
     const formData = new URLSearchParams();
-    formData.append('action', 'addLink');
-    formData.append('projectName', folder);
-    formData.append('title', title);
-    formData.append('linkUrl', url);
-    formData.append('description', desc);
+    formData.append('action', 'addLink'); formData.append('projectName', folder);
+    formData.append('title', title); formData.append('linkUrl', url); formData.append('description', desc);
 
     try {
-        const response = await fetch(gasUrl, { method: 'POST', body: formData });
-        const data = await response.json();
+        const res = await fetch(gasUrl, { method: 'POST', body: formData });
+        const data = await res.json();
         if(data.status === "success") {
-            alert('✅ חלונית נוצרה בהצלחה!');
-            document.getElementById('linkTitle').value = '';
-            document.getElementById('linkDesc').value = '';
-            document.getElementById('linkUrl').value = '';
+            alert('✅ חלונית נוצרה!'); document.getElementById('linkTitle').value=''; document.getElementById('linkUrl').value='';
             loadManagerFiles(); refreshPreview();
-        } else { alert("שגיאה!"); }
+        }
     } catch(err) { alert("שגיאת רשת"); }
     hideLoader();
 }
@@ -335,68 +350,58 @@ async function saveSettings() {
     const settings = {
         title: document.getElementById('s_title').value,
         subtitle: document.getElementById('s_subtitle').value,
+        loadingText: document.getElementById('s_loadingText').value,
         mainColor: document.getElementById('s_mainColor').value,
         bg1: document.getElementById('s_bg1').value,
+        textColor: document.getElementById('s_textColor').value,
         borderWidth: document.getElementById('s_borderWidth').value,
         borderRadius: document.getElementById('s_borderRadius').value,
         shadow: document.getElementById('s_shadow').value,
-        animations: document.getElementById('s_animations').value
+        font: document.getElementById('s_font').value,
+        cardSize: document.getElementById('s_cardSize').value,
+        titleSize: document.getElementById('s_titleSize').value,
+        textSize: document.getElementById('s_textSize').value,
+        cardAnim: document.getElementById('s_cardAnim').value,
+        textAnim: document.getElementById('s_textAnim').value
     };
     
-    showLoader("שומר הגדרות עיצוב...");
+    showLoader("שומר הגדרות...");
     const formData = new URLSearchParams();
     formData.append('action', 'saveSettings');
     formData.append('settings', JSON.stringify(settings));
     
     try {
-        const response = await fetch(gasUrl, { method: 'POST', body: formData });
-        const data = await response.json();
-        if(data.status === "success") {
-            alert('✅ הגדרות נשמרו ויחולו מיד באתר הצפייה!');
-            refreshPreview();
-        }
+        const res = await fetch(gasUrl, { method: 'POST', body: formData });
+        if((await res.json()).status === "success") { alert('✅ הגדרות נשמרו!'); refreshPreview(); }
     } catch(err) { alert("שגיאה בשמירה"); }
     hideLoader();
 }
 
 async function deleteEntireFolder(folderName) {
-    if(!confirm(`אזהרה חמורה!\nהאם למחוק את כל התיקייה "${folderName}" ואת כל הקבצים שבה לצמיתות?`)) return;
+    if(!confirm(`למחוק את ${folderName} לצמיתות?`)) return;
     const formData = new URLSearchParams();
-    formData.append('action', 'deleteFolder');
-    formData.append('folderName', folderName);
-    
-    showLoader("מוחק תיקייה...");
+    formData.append('action', 'deleteFolder'); formData.append('folderName', folderName);
+    showLoader("מוחק...");
     try {
-        const response = await fetch(gasUrl, { method: 'POST', body: formData });
-        const data = await response.json();
-        if(data.status === "success") {
-            alert('🗑️ התיקייה נמחקה!');
-            loadManagerFiles(); refreshPreview();
-        } else alert('❌ שגיאה: ' + data.message);
-    } catch (err) { alert('❌ שגיאת תקשורת.'); }
+        const res = await fetch(gasUrl, { method: 'POST', body: formData });
+        if((await res.json()).status === "success") { loadManagerFiles(); refreshPreview(); }
+    } catch (err) {}
     hideLoader();
 }
 
 async function deleteFile(githubPath, rowIndex) {
-    if(!confirm('האם אתה בטוח שברצונך למחוק קובץ זה?')) return;
+    if(!confirm('למחוק קובץ זה?')) return;
     const formData = new URLSearchParams();
-    formData.append('action', 'delete');
-    formData.append('githubPath', githubPath);
-    formData.append('rowIndex', rowIndex);
+    formData.append('action', 'delete'); formData.append('githubPath', githubPath); formData.append('rowIndex', rowIndex);
     showLoader("מוחק...");
     try {
-        const response = await fetch(gasUrl, { method: 'POST', body: formData });
-        const data = await response.json();
-        if(data.status === "success") { loadManagerFiles(); refreshPreview(); }
-    } catch (err) { alert('❌ שגיאת תקשורת.'); }
+        const res = await fetch(gasUrl, { method: 'POST', body: formData });
+        if((await res.json()).status === "success") { loadManagerFiles(); refreshPreview(); }
+    } catch (err) {}
     hideLoader();
 }
 
-function refreshPreview() { 
-    const preview = document.getElementById('sitePreview');
-    if(preview) preview.src = 'index.html?t=' + new Date().getTime(); 
-}
-
+function refreshPreview() { document.getElementById('sitePreview').src = 'index.html?t=' + Date.now(); }
 window.onload = loadManagerFiles;
 </script>
 </body>
