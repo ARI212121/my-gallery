@@ -5,135 +5,276 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>מערכת ניהול - הגלריה שלי</title>
     <style>
+        :root { --primary: #3498db; --success: #2ecc71; --danger: #e74c3c; --dark: #2c3e50; }
         body { font-family: 'Segoe UI', sans-serif; padding: 20px; background-color: #f0f2f5; color: #333; margin: 0; }
-        .container { max-width: 900px; margin: 40px auto; background: white; padding: 40px; border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #2c3e50; font-size: 32px; border-bottom: 3px solid #3498db; padding-bottom: 15px; display: inline-block; margin-bottom: 30px;}
+        .container { max-width: 1000px; margin: 20px auto; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: var(--dark); border-bottom: 3px solid var(--primary); padding-bottom: 10px; display: inline-block; margin-bottom: 20px; }
         .header-center { text-align: center; }
         
-        .upload-section { background: #f8f9fa; padding: 25px; border-radius: 12px; border: 2px dashed #bdc3c7; margin-bottom: 40px; }
-        .input-group { margin-bottom: 20px; }
-        input[type="text"], input[type="file"] { 
-            display: block; width: 100%; padding: 15px; 
-            box-sizing: border-box; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; transition: border-color 0.3s;
+        /* Tabs */
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #ddd; padding-bottom: 10px; flex-wrap: wrap; }
+        .tab { padding: 10px 20px; background: #eee; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .tab.active { background: var(--primary); color: white; }
+        .tab-content { display: none; animation: fadeIn 0.5s; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .section-box { background: #f8f9fa; padding: 20px; border-radius: 12px; border: 1px solid #bdc3c7; margin-bottom: 20px; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: #555; }
+        input[type="text"], input[type="file"], input[type="url"], input[type="color"], input[type="range"], select, textarea { 
+            width: 100%; padding: 12px; box-sizing: border-box; border-radius: 8px; border: 1px solid #ccc; font-size: 15px; font-family: inherit;
         }
-        input[type="text"]:focus { border-color: #3498db; outline: none; box-shadow: 0 0 8px rgba(52,152,219,0.3); }
+        input[type="color"] { height: 50px; padding: 5px; cursor: pointer; }
         
-        button.btn-upload { background-color: #2ecc71; color: white; border: none; cursor: pointer; font-weight: bold; font-size: 18px; padding: 15px; width: 100%; border-radius: 8px; transition: all 0.3s; }
-        button.btn-upload:hover { background-color: #27ae60; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(46,204,113,0.4); }
+        button { background-color: var(--primary); color: white; border: none; cursor: pointer; font-weight: bold; font-size: 16px; padding: 12px 20px; border-radius: 8px; transition: 0.3s; }
+        button:hover { filter: brightness(1.1); }
+        button.btn-success { background-color: var(--success); width: 100%; font-size: 18px; padding: 15px; }
+        button.btn-danger { background-color: var(--danger); padding: 8px 15px; font-size: 14px; }
         
         #loader { display: none; background-color: #e8f8f5; color: #16a085; padding: 15px; border-radius: 8px; text-align: center; margin-top: 15px; font-weight: bold; border: 1px solid #1abc9c; }
         
-        /* אזור מחיקת קבצים */
-        .manage-section { background: #fff; padding: 20px; border-radius: 12px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); border: 1px solid #eee; }
-        .file-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; transition: background 0.3s; }
-        .file-item:hover { background: #fdfdfd; }
-        .file-info { font-size: 16px; font-weight: 500; }
-        .btn-delete { background-color: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: background 0.3s; }
-        .btn-delete:hover { background-color: #c0392b; }
-
-        hr { border:0; border-top:2px solid #eee; margin:40px 0; }
+        /* Folders List */
+        .folder-group { background: #fff; border: 1px solid #eee; margin-bottom: 15px; border-radius: 8px; overflow: hidden; }
+        .folder-header { background: #ecf0f1; padding: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 18px; }
+        .file-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; border-bottom: 1px solid #eee; background: #fafafa; }
+        .file-info { font-size: 15px; }
+        
         iframe { width: 100%; height: 600px; border: 3px solid #ecf0f1; margin-top: 20px; border-radius: 12px; }
+        .hint { font-size: 12px; color: #7f8c8d; margin-top: 4px; display: block; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header-center">
-        <h2>לוח בקרה - מנהל מערכת ⚙️</h2>
+        <h2>מערכת ניהול אתר ⚙️</h2>
     </div>
     
-    <div class="upload-section">
-        <h3 style="margin-top:0; color: #34495e;">העלאת קובץ חדש 🚀</h3>
-        <div class="input-group">
-            <input type="text" id="projectName" placeholder="שם הפרויקט (למשל: תיקיית עבודות)">
-        </div>
-        <div class="input-group">
-            <input type="file" id="fileInput">
-        </div>
-        <button class="btn-upload" onclick="uploadData()">העלה לשרת</button>
-        <div id="loader">מכווץ ומעלה קובץ... ⏳ נא להמתין</div>
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('upload')">העלאת קבצים</div>
+        <div class="tab" onclick="switchTab('links')">יצירת חלוניות טקסט/קישור</div>
+        <div class="tab" onclick="switchTab('manage')">ניהול ומחיקה</div>
+        <div class="tab" onclick="switchTab('settings')">הגדרות עיצוב וטקסט</div>
     </div>
 
-    <div class="manage-section">
-        <h3 style="margin-top:0; color: #e74c3c;">ניהול ומחיקת קבצים קיימים 🗑️</h3>
+    <!-- העלאת קבצים -->
+    <div id="upload" class="tab-content active section-box">
+        <h3>העלאת קובץ חדש</h3>
+        <div class="grid-2">
+            <div class="input-group">
+                <label>תיקייה ראשית</label>
+                <input type="text" id="mainFolder" placeholder="למשל: אירועים">
+            </div>
+            <div class="input-group">
+                <label>תת-תיקייה (אופציונלי)</label>
+                <input type="text" id="subFolder" placeholder="למשל: חורף 2025">
+                <span class="hint">ניתן גם לעשות רמות נוספות בעזרת לוכסן: חורף/תמונות/ערב</span>
+            </div>
+        </div>
+        <div class="input-group">
+            <label>טקסט / כותרת לקובץ (אופציונלי)</label>
+            <textarea id="fileDescription" rows="2" placeholder="טקסט שיופיע תחת הקובץ באתר"></textarea>
+        </div>
+        <div class="input-group">
+            <label>בחירת קובץ (תמונה, HTML, PDF וכו')</label>
+            <input type="file" id="fileInput">
+        </div>
+        <button class="btn-success" onclick="uploadData()">העלה קובץ לשרת</button>
+        <div id="loader">מבצע פעולה... ⏳ נא להמתין</div>
+    </div>
+
+    <!-- הוספת חלונית טקסט -->
+    <div id="links" class="tab-content section-box">
+        <h3>הוספת חלונית טקסט וקישור לאתר</h3>
+        <p class="hint">יוצר כרטיסייה מעוצבת באתר עם טקסט, שבלחיצה תוביל לקישור אחר.</p>
+        <div class="grid-2">
+            <div class="input-group">
+                <label>תיקייה / מיקום</label>
+                <input type="text" id="linkFolder" placeholder="למשל: קישורים שימושיים">
+            </div>
+            <div class="input-group">
+                <label>כותרת החלונית</label>
+                <input type="text" id="linkTitle" placeholder="למשל: למעבר לאתר החיצוני לחץ כאן">
+            </div>
+        </div>
+        <div class="input-group">
+            <label>קישור (URL)</label>
+            <input type="url" id="linkUrl" placeholder="https://...">
+        </div>
+        <div class="input-group">
+            <label>טקסט פירוט (אופציונלי)</label>
+            <textarea id="linkDesc" rows="3" placeholder="הסבר קצר על מה החלונית..."></textarea>
+        </div>
+        <button class="btn-success" onclick="addLinkCard()">צור חלונית באתר</button>
+    </div>
+
+    <!-- ניהול ומחיקה -->
+    <div id="manage" class="tab-content section-box">
+        <h3>ניהול תיקיות וקבצים</h3>
+        <button onclick="loadManagerFiles()" style="margin-bottom:15px;">רענן רשימה 🔄</button>
         <div id="fileManagerList">טוען קבצים...</div>
     </div>
 
+    <!-- הגדרות אתר ועיצוב -->
+    <div id="settings" class="tab-content section-box">
+        <h3>הגדרות עיצוב מתקדמות לאתר</h3>
+        <div class="grid-2">
+            <div class="input-group">
+                <label>כותרת ראשית באתר</label>
+                <input type="text" id="s_title" placeholder="הגלריה המרהיבה שלי">
+            </div>
+            <div class="input-group">
+                <label>טקסט פתיחה / תיאור קצר</label>
+                <input type="text" id="s_subtitle" placeholder="ברוכים הבאים לתיק העבודות...">
+            </div>
+            <div class="input-group">
+                <label>צבע ראשי (מסגרות וכותרות)</label>
+                <input type="color" id="s_mainColor" value="#1abc9c">
+            </div>
+            <div class="input-group">
+                <label>צבע רקע (גרדיאנט - צבע התחלה)</label>
+                <input type="color" id="s_bg1" value="#f5f7fa">
+            </div>
+            <div class="input-group">
+                <label>עובי מסגרת לכרטיסיות (פיקסלים)</label>
+                <input type="range" id="s_borderWidth" min="0" max="10" value="2" oninput="document.getElementById('bw_val').innerText=this.value">
+                <span id="bw_val">2</span>px
+            </div>
+            <div class="input-group">
+                <label>עיגול פינות לכרטיסיות (פיקסלים)</label>
+                <input type="range" id="s_borderRadius" min="0" max="50" value="16" oninput="document.getElementById('br_val').innerText=this.value">
+                <span id="br_val">16</span>px
+            </div>
+            <div class="input-group">
+                <label>עוצמת צללית (Glow)</label>
+                <select id="s_shadow">
+                    <option value="none">ללא צל</option>
+                    <option value="light">עדין</option>
+                    <option value="medium" selected>בינוני</option>
+                    <option value="heavy">חזק ובולט</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>אנימציות באתר?</label>
+                <select id="s_animations">
+                    <option value="true">מופעל - אנימציות זזות כל הזמן</option>
+                    <option value="false">מכובה - יציב (ניתן להדליק מהאתר)</option>
+                </select>
+            </div>
+        </div>
+        <button class="btn-success" onclick="saveSettings()">שמור הגדרות עיצוב וטקסט 🎨</button>
+    </div>
+
     <hr>
-    
-    <h3 style="color: #7f8c8d;">תצוגה מקדימה לאתר הלקוחות:</h3>
+    <h3>תצוגה מקדימה לאתר הלקוחות:</h3>
+    <button onclick="refreshPreview()">רענן תצוגה עכשיו</button>
     <iframe id="sitePreview" src="index.html"></iframe>
 </div>
 
 <script>
-// --- החלף כאן בכתובת השרת! ---
+// --- הכנס כאן את כתובת ה-WebApp החדשה שלך! ---
 const gasUrl = 'https://script.google.com/macros/s/AKfycbzhQ3D6LYDGmN2-WgfBSyBcQuzu6nLdxE4VmFRT2anbmzz5SU9RnTlEBEXDFxw2CS_e/exec';
 
-// טעינת הקבצים בעת פתיחת הדף למטרת מחיקה
-async function loadManagerFiles() {
-    const listDiv = document.getElementById('fileManagerList');
-    try {
-        const response = await fetch(gasUrl);
-        const data = await response.json();
-        
-        if(data.length === 0) {
-            listDiv.innerHTML = 'אין קבצים במערכת כרגע.';
-            return;
-        }
-
-        listDiv.innerHTML = ''; // מנקה את הטקסט "טוען"
-        
-        // מסדר את הרשימה מהחדש לישן
-        data.reverse().forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'file-item';
-            div.innerHTML = `
-                <div class="file-info">📁 ${item.projectName} | 📄 ${item.fileName}</div>
-                <button class="btn-delete" onclick="deleteFile('${item.githubPath}', ${item.rowIndex})">מחק קובץ</button>
-            `;
-            listDiv.appendChild(div);
-        });
-    } catch (error) {
-        listDiv.innerHTML = '❌ שגיאה בטעינת רשימת הקבצים.';
-    }
+function switchTab(tabId) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById(tabId).classList.add('active');
 }
 
-// פונקציית העלאה
+function showLoader(msg) {
+    const l = document.getElementById('loader');
+    l.innerText = msg || "מבצע פעולה...";
+    l.style.display = 'block';
+}
+function hideLoader() { document.getElementById('loader').style.display = 'none'; }
+
+// טעינת קבצים למערכת הניהול
+async function loadManagerFiles() {
+    const listDiv = document.getElementById('fileManagerList');
+    listDiv.innerHTML = 'טוען נתונים מהשרת... ⏳';
+    try {
+        const response = await fetch(gasUrl);
+        const dataRes = await response.json();
+        
+        // אתחול הגדרות לעמודת הגדרות
+        if(dataRes.settings) {
+            if(dataRes.settings.title) document.getElementById('s_title').value = dataRes.settings.title;
+            if(dataRes.settings.subtitle) document.getElementById('s_subtitle').value = dataRes.settings.subtitle;
+            if(dataRes.settings.mainColor) document.getElementById('s_mainColor').value = dataRes.settings.mainColor;
+            if(dataRes.settings.bg1) document.getElementById('s_bg1').value = dataRes.settings.bg1;
+            if(dataRes.settings.borderWidth) { document.getElementById('s_borderWidth').value = dataRes.settings.borderWidth; document.getElementById('bw_val').innerText = dataRes.settings.borderWidth; }
+            if(dataRes.settings.borderRadius) { document.getElementById('s_borderRadius').value = dataRes.settings.borderRadius; document.getElementById('br_val').innerText = dataRes.settings.borderRadius; }
+            if(dataRes.settings.shadow) document.getElementById('s_shadow').value = dataRes.settings.shadow;
+            if(dataRes.settings.animations) document.getElementById('s_animations').value = dataRes.settings.animations;
+        }
+
+        const data = dataRes.files || [];
+        if(data.length === 0) { listDiv.innerHTML = 'אין קבצים במערכת.'; return; }
+        
+        listDiv.innerHTML = '';
+        const folders = {};
+        
+        data.forEach(item => {
+            if(!folders[item.projectName]) folders[item.projectName] = [];
+            folders[item.projectName].push(item);
+        });
+
+        for(const [folderName, items] of Object.entries(folders)) {
+            const grp = document.createElement('div');
+            grp.className = 'folder-group';
+            grp.innerHTML = `
+                <div class="folder-header">
+                    <span>📁 תיקייה: ${folderName} (${items.length} פריטים)</span>
+                    <button class="btn-danger" onclick="deleteEntireFolder('${folderName}')">מחק תיקייה שלמה!</button>
+                </div>
+            `;
+            items.reverse().forEach(item => {
+                const isLink = item.githubPath === "LINK";
+                const icon = isLink ? "🔗" : "📄";
+                const row = document.createElement('div');
+                row.className = 'file-item';
+                row.innerHTML = `
+                    <div class="file-info">${icon} <b>${item.fileName}</b> <span class="hint">${item.description}</span></div>
+                    <button class="btn-danger" style="background:#e67e22;" onclick="deleteFile('${item.githubPath}', ${item.rowIndex})">מחק פריט</button>
+                `;
+                grp.appendChild(row);
+            });
+            listDiv.appendChild(grp);
+        }
+    } catch (error) { listDiv.innerHTML = '❌ שגיאה בטעינת הקבצים.'; }
+}
+
 async function uploadData() {
-    const projectName = document.getElementById('projectName').value;
+    const mainF = document.getElementById('mainFolder').value.trim();
+    const subF = document.getElementById('subFolder').value.trim();
+    const desc = document.getElementById('fileDescription').value.trim();
     const fileInput = document.getElementById('fileInput');
     
-    if (!projectName || !fileInput.files[0]) { alert('נא למלא שם פרויקט ולבחור קובץ!'); return; }
+    let projectName = mainF;
+    if(subF) projectName += "/" + subF;
+    
+    if (!projectName || !fileInput.files[0]) { alert('חובה למלא תיקייה ולבחור קובץ!'); return; }
 
-    document.getElementById('loader').style.display = 'block';
-
+    showLoader("מעלה קובץ... נא להמתין ⏳");
     const file = fileInput.files[0];
     const reader = new FileReader();
 
     reader.onload = async function(e) {
         const base64Data = e.target.result.split(',')[1];
         let thumbData = "";
-
         if (file.type.startsWith('image/')) {
             const img = new Image();
             img.src = e.target.result;
             await new Promise(r => img.onload = r); 
-            
             const canvas = document.createElement('canvas');
-            const MAX_WIDTH = 400; 
-            let width = img.width;
-            let height = img.height;
-            
-            if (width > MAX_WIDTH) {
-                height = height * (MAX_WIDTH / width);
-                width = MAX_WIDTH;
-            }
-            
-            canvas.width = width;
-            canvas.height = height;
+            const MAX_WIDTH = 400; let width = img.width; let height = img.height;
+            if (width > MAX_WIDTH) { height = height * (MAX_WIDTH / width); width = MAX_WIDTH; }
+            canvas.width = width; canvas.height = height;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, width, height);
-            
             thumbData = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
         }
 
@@ -142,6 +283,7 @@ async function uploadData() {
         formData.append('projectName', projectName);
         formData.append('fileData', base64Data);
         formData.append('fileName', file.name);
+        formData.append('description', desc);
         if (thumbData) formData.append('thumbData', thumbData); 
 
         try {
@@ -150,50 +292,111 @@ async function uploadData() {
             if(data.status === "success") {
                 alert('✅ הועלה בהצלחה!');
                 document.getElementById('fileInput').value = '';
-                loadManagerFiles(); // מרענן את רשימת המחיקה
-                refreshPreview();   // מרענן את התצוגה המקדימה
-            } else { throw new Error(data.message); }
+                document.getElementById('fileDescription').value = '';
+                loadManagerFiles(); refreshPreview();
+            } else throw new Error(data.message);
         } catch (err) { alert('❌ שגיאה בהעלאה: ' + err.message); }
-        document.getElementById('loader').style.display = 'none';
+        hideLoader();
     };
     reader.readAsDataURL(file);
 }
 
-// פונקציית המחיקה החדשה שעובדת מול השרת הקיים!
-async function deleteFile(githubPath, rowIndex) {
-    if(!confirm('האם אתה בטוח שברצונך למחוק את הקובץ? הפעולה הזו תמחק אותו מ-GitHub ומגיליון הנתונים.')) {
-        return; // אם המשתמש ביטל
-    }
-
+async function addLinkCard() {
+    const folder = document.getElementById('linkFolder').value.trim();
+    const title = document.getElementById('linkTitle').value.trim();
+    const url = document.getElementById('linkUrl').value.trim();
+    const desc = document.getElementById('linkDesc').value.trim();
+    
+    if(!folder || !title || !url) { alert("יש למלא מיקום, כותרת וקישור!"); return; }
+    
+    showLoader("יוצר חלונית...");
     const formData = new URLSearchParams();
-    formData.append('action', 'delete');
-    formData.append('githubPath', githubPath);
-    formData.append('rowIndex', rowIndex);
+    formData.append('action', 'addLink');
+    formData.append('projectName', folder);
+    formData.append('title', title);
+    formData.append('linkUrl', url);
+    formData.append('description', desc);
 
     try {
         const response = await fetch(gasUrl, { method: 'POST', body: formData });
         const data = await response.json();
-        
         if(data.status === "success") {
-            alert('🗑️ נמחק בהצלחה!');
-            loadManagerFiles(); // מרענן את רשימת המחיקה
-            refreshPreview();   // מרענן את התצוגה המקדימה
-        } else {
-            alert('❌ שגיאה במחיקה: ' + data.message);
+            alert('✅ חלונית נוצרה בהצלחה!');
+            document.getElementById('linkTitle').value = '';
+            document.getElementById('linkDesc').value = '';
+            document.getElementById('linkUrl').value = '';
+            loadManagerFiles(); refreshPreview();
+        } else { alert("שגיאה!"); }
+    } catch(err) { alert("שגיאת רשת"); }
+    hideLoader();
+}
+
+async function saveSettings() {
+    const settings = {
+        title: document.getElementById('s_title').value,
+        subtitle: document.getElementById('s_subtitle').value,
+        mainColor: document.getElementById('s_mainColor').value,
+        bg1: document.getElementById('s_bg1').value,
+        borderWidth: document.getElementById('s_borderWidth').value,
+        borderRadius: document.getElementById('s_borderRadius').value,
+        shadow: document.getElementById('s_shadow').value,
+        animations: document.getElementById('s_animations').value
+    };
+    
+    showLoader("שומר הגדרות עיצוב...");
+    const formData = new URLSearchParams();
+    formData.append('action', 'saveSettings');
+    formData.append('settings', JSON.stringify(settings));
+    
+    try {
+        const response = await fetch(gasUrl, { method: 'POST', body: formData });
+        const data = await response.json();
+        if(data.status === "success") {
+            alert('✅ הגדרות נשמרו ויחולו מיד באתר הצפייה!');
+            refreshPreview();
         }
-    } catch (err) {
-        alert('❌ שגיאת תקשורת במחיקה.');
-    }
+    } catch(err) { alert("שגיאה בשמירה"); }
+    hideLoader();
+}
+
+async function deleteEntireFolder(folderName) {
+    if(!confirm(`אזהרה חמורה!\nהאם למחוק את כל התיקייה "${folderName}" ואת כל הקבצים שבה לצמיתות?`)) return;
+    const formData = new URLSearchParams();
+    formData.append('action', 'deleteFolder');
+    formData.append('folderName', folderName);
+    
+    showLoader("מוחק תיקייה...");
+    try {
+        const response = await fetch(gasUrl, { method: 'POST', body: formData });
+        const data = await response.json();
+        if(data.status === "success") {
+            alert('🗑️ התיקייה נמחקה!');
+            loadManagerFiles(); refreshPreview();
+        } else alert('❌ שגיאה: ' + data.message);
+    } catch (err) { alert('❌ שגיאת תקשורת.'); }
+    hideLoader();
+}
+
+async function deleteFile(githubPath, rowIndex) {
+    if(!confirm('האם אתה בטוח שברצונך למחוק קובץ זה?')) return;
+    const formData = new URLSearchParams();
+    formData.append('action', 'delete');
+    formData.append('githubPath', githubPath);
+    formData.append('rowIndex', rowIndex);
+    showLoader("מוחק...");
+    try {
+        const response = await fetch(gasUrl, { method: 'POST', body: formData });
+        const data = await response.json();
+        if(data.status === "success") { loadManagerFiles(); refreshPreview(); }
+    } catch (err) { alert('❌ שגיאת תקשורת.'); }
+    hideLoader();
 }
 
 function refreshPreview() { 
     const preview = document.getElementById('sitePreview');
-    if(preview) {
-        preview.src = 'index.html?t=' + new Date().getTime(); 
-    }
+    if(preview) preview.src = 'index.html?t=' + new Date().getTime(); 
 }
 
-// מריץ את הטעינה כשפותחים את הדף
 window.onload = loadManagerFiles;
 </script>
 </body>
