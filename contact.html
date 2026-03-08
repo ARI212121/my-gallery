@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>צור קשר - הגלריה שלי</title>
+<title>צור קשר - ARISH פיתוח תוכנות</title>
 <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&family=Heebo:wght@400;700&family=Rubik:wght@400;700&family=Varela+Round&display=swap" rel="stylesheet">
 <style>
     :root {
@@ -99,7 +99,7 @@
     <button class="btn-submit" id="submitBtn" onclick="sendMessage()">שלח הודעה 🚀</button>
     <div id="loader">שולח נתונים... ⏳</div>
     
-    <a href="index.html" class="back-link">🔙 חזרה לגלריה</a>
+    <a href="index.html" class="back-link">🔙 חזרה לאתר</a>
 </div>
 
 <div class="contact-container" id="successMsg">
@@ -146,7 +146,7 @@ async function generateMessageWithGemini() {
     aiStatus.style.color = "var(--main-color)";
     messageEl.disabled = true;
 
-    const promptText = `נסח הודעת 'צור קשר' רשמית, מקצועית ומנומסת עבור מנהל אתר גלריה, בהתבסס על מילות המפתח הבאות. החזר רק את תוכן ההודעה, ללא הקדמות. מילות מפתח: ${originalText}`;
+    const promptText = `נסח הודעת 'צור קשר' רשמית, מקצועית ומנומסת עבור מנהל אתר ARISH פיתוח תוכנות, בהתבסס על מילות המפתח הבאות. החזר רק את תוכן ההודעה, ללא הקדמות. מילות מפתח: ${originalText}`;
 
     const payload = {
         contents: [{ parts: [{ text: promptText }] }],
