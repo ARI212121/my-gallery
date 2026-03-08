@@ -20,30 +20,50 @@
         --card-size: 240px;
         --title-size: 48px;
         --text-size: 18px;
+        --card-bg: rgba(255, 255, 255, 0.9);
     }
     
+    /* דריסת צבעים במצב לילה אישי של המשתמש */
+    body.user-dark-mode {
+        --bg-color-1: #121212;
+        --text-color: #e0e0e0;
+        --card-bg: #1e1e1e;
+        --shadow-color: rgba(255,255,255,0.02);
+    }
+
     body {
         font-family: var(--font-family);
         background: var(--bg-color-1);
-        color: var(--text-color); margin: 0; padding: 30px; min-height: 100vh;
+        color: var(--text-color); margin: 0; padding: 20px 30px; min-height: 100vh;
         transition: background 0.5s, color 0.5s;
     }
     
+    /* סרגל הכלים העליון החדש */
+    .top-toolbar { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; align-items: center; margin-bottom: 30px; background: var(--card-bg); padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px var(--shadow-color); border: 1px solid rgba(128,128,128,0.2); }
+    .search-box { flex-grow: 1; max-width: 400px; padding: 12px 20px; border-radius: 20px; border: 2px solid #ccc; font-size: 16px; font-family: inherit; transition: 0.3s; background: transparent; color: var(--text-color); }
+    .search-box:focus { outline: none; border-color: var(--main-color); }
+    .tool-btn { background: transparent; color: var(--text-color); border: 2px solid #ccc; padding: 10px 15px; border-radius: 20px; cursor: pointer; font-weight: bold; transition: 0.3s; font-family: inherit; }
+    .tool-btn:hover { border-color: var(--main-color); color: var(--main-color); }
+
     .site-header { text-align: center; margin-bottom: 40px; }
     .site-header h1 { color: var(--main-color); font-size: var(--title-size); margin: 0; text-shadow: 1px 1px 3px rgba(0,0,0,0.1); }
     .site-header p { font-size: calc(var(--text-size) * 1.2); opacity: 0.8; }
     
     #loader { text-align: center; font-size: 1.5em; color: var(--main-color); margin: 50px 0; font-weight: bold; }
     
-    .breadcrumbs { background: rgba(255,255,255,0.7); padding: 10px 20px; border-radius: 10px; margin-bottom: 20px; font-weight: bold; font-size: var(--text-size); }
+    .breadcrumbs { background: var(--card-bg); padding: 10px 20px; border-radius: 10px; margin-bottom: 20px; font-weight: bold; font-size: var(--text-size); border: 1px solid rgba(128,128,128,0.2); }
     .breadcrumbs span { cursor: pointer; color: var(--main-color); transition: 0.3s; }
     .breadcrumbs span:hover { text-decoration: underline; color: var(--text-color); }
     .breadcrumbs .separator { margin: 0 10px; color: #888; cursor: default; }
 
+    /* תצוגת גריד רגילה */
     .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--card-size), 1fr)); gap: 30px; }
     
+    /* תצוגת רשימה קומפקטית */
+    .gallery-grid.list-view { display: flex; flex-direction: column; gap: 15px; }
+    
     .item-card, .folder-card {
-        background: rgba(255, 255, 255, 0.9);
+        background: var(--card-bg);
         border-radius: var(--border-radius);
         padding: 20px; text-align: center; cursor: pointer;
         display: flex; flex-direction: column; align-items: center; justify-content: space-between;
@@ -51,6 +71,15 @@
         box-shadow: 0 var(--shadow-depth) calc(var(--shadow-depth)*2) var(--shadow-color);
         transition: all 0.3s ease;
     }
+
+    /* התאמות למצב תצוגת רשימה (List) */
+    .gallery-grid.list-view .item-card, .gallery-grid.list-view .folder-card { flex-direction: row; justify-content: flex-start; text-align: right; padding: 15px; }
+    .gallery-grid.list-view .item-image { width: 100px; height: 70px; margin-bottom: 0; margin-left: 20px; }
+    .gallery-grid.list-view .folder-icon, .gallery-grid.list-view .file-icon { font-size: 40px; margin-bottom: 0; margin-left: 20px; }
+    .gallery-grid.list-view .item-name, .gallery-grid.list-view .folder-name { flex-grow: 1; text-align: right; font-size: var(--text-size); }
+    .gallery-grid.list-view .desc-text { display: none; /* מסתיר את התיאור ברשימה כדי לשמור על סדר */ }
+    .gallery-grid.list-view .click-indicator { margin-top: 0; margin-right: auto; }
+    .gallery-grid.list-view .html-preview-container { width: 100px; height: 70px; margin-bottom: 0; margin-left: 20px; }
     
     /* אנימציות ריחוף כרטיסיות (נבחרות מההגדרות) */
     .anim-float:hover { transform: translateY(-10px); border-color: var(--main-color); box-shadow: 0 var(--hover-shadow) calc(var(--hover-shadow)*1.5) rgba(0,0,0,0.15); }
@@ -67,7 +96,6 @@
     @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes bounceIn { 0% { opacity: 0; transform: scale(0.3); } 50% { opacity: 1; transform: scale(1.05); } 70% { transform: scale(0.9); } 100% { transform: scale(1); } }
 
-    .folder-card { background: linear-gradient(to bottom, #fff, #f8f9fa); }
     .folder-icon { font-size: calc(var(--card-size) / 3); margin-bottom: 10px; }
     .folder-name { font-size: calc(var(--text-size) * 1.2); font-weight: bold; color: var(--main-color); }
     
@@ -95,6 +123,12 @@
 </style>
 </head>
 <body>
+
+<div class="top-toolbar">
+    <input type="text" id="searchInput" class="search-box" placeholder="🔍 חפש קובץ או תיקייה..." onkeyup="filterItems()">
+    <button class="tool-btn" onclick="toggleListView()">🔲 החלף תצוגה</button>
+    <button class="tool-btn" id="darkModeBtn" onclick="toggleDarkMode()">🌙 מצב לילה אישי</button>
+</div>
 
 <div class="site-header" id="headerSection">
     <h1 id="uiTitle">...</h1>
@@ -169,6 +203,7 @@ function applySettings(settings) {
 function renderPath(path) {
     const view = document.getElementById('mainView');
     view.innerHTML = "";
+    document.getElementById('searchInput').value = ""; // מנקה חיפוש במעבר תיקייה
     updateBreadcrumbs(path);
     
     const pathParts = path ? path.split('/') : [];
@@ -236,9 +271,38 @@ function updateBreadcrumbs(path) {
     let currentPath = "";
     path.split('/').forEach((part, index) => {
         currentPath += (index === 0 ? part : '/' + part);
-        html += `<span class="separator">/</span> <span onclick="renderPath('${currentPath}')">${part}</span>`;
+        html += `<span class="separator">/</span> <span onclick="renderPath('${currentPath}')">📂 ${part}</span>`;
     });
     bc.innerHTML = html;
+}
+
+// מערכת חיפוש חכמה בזמן אמת
+function filterItems() {
+    const query = document.getElementById('searchInput').value.toLowerCase();
+    const cards = document.getElementById('mainView').children;
+    for(let card of cards) {
+        if(card.tagName === 'H3') continue;
+        const text = card.innerText.toLowerCase();
+        if(text.includes(query)) card.style.display = '';
+        else card.style.display = 'none';
+    }
+}
+
+// מעבר בין רשימה לגריד
+function toggleListView() {
+    const grid = document.getElementById('mainView');
+    grid.classList.toggle('list-view');
+}
+
+// מעבר למצב לילה אישי
+function toggleDarkMode() {
+    document.body.classList.toggle('user-dark-mode');
+    const btn = document.getElementById('darkModeBtn');
+    if(document.body.classList.contains('user-dark-mode')) {
+        btn.innerHTML = "☀️ מצב יום";
+    } else {
+        btn.innerHTML = "🌙 מצב לילה אישי";
+    }
 }
 
 function openModal(src, title, desc) {
