@@ -446,11 +446,18 @@ function openModal(src, title, desc) {
     currentModalDesc = desc || "";
 
     document.getElementById('aiExplainerResult').style.display = 'none';
-    document.getElementById('aiExplainerResult').innerText = '';
+    document.getElementById('aiExplainerResult').innerHTML = '';
     document.getElementById('btnExplainProject').style.display = 'inline-block';
 }
 
 function closeModal() { document.getElementById("imageModal").style.display = "none"; }
+
+// --- פונקציה להמרת Markdown (כוכביות) ל-HTML ---
+function formatMarkdownText(text) {
+    if (!text) return "";
+    // ממיר **טקסט** ל <strong>טקסט</strong>
+    return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+}
 
 // --- פונקציות העוזר החכם של Gemini (בקשות מאובטחות דרך השרת) ---
 function toggleAIChat() {
@@ -462,7 +469,10 @@ function appendChatMessage(text, sender) {
     const msgs = document.getElementById('aiChatMessages');
     const msgDiv = document.createElement('div');
     msgDiv.className = sender === 'user' ? 'user-msg' : 'ai-msg';
-    msgDiv.innerText = text;
+    
+    // שימוש בפונקציית העיצוב החדשה
+    msgDiv.innerHTML = formatMarkdownText(text);
+    
     const id = 'msg_' + Date.now();
     msgDiv.id = id;
     msgs.appendChild(msgDiv);
@@ -473,7 +483,8 @@ function appendChatMessage(text, sender) {
 function updateChatMessage(id, text) {
     const msgDiv = document.getElementById(id);
     if(msgDiv) {
-        msgDiv.innerText = text;
+        // שימוש בפונקציית העיצוב החדשה גם כאן
+        msgDiv.innerHTML = formatMarkdownText(text);
         const msgs = document.getElementById('aiChatMessages');
         msgs.scrollTop = msgs.scrollHeight;
     }
@@ -545,7 +556,8 @@ async function explainProjectWithAI() {
 
     try {
         const aiResponse = await callGeminiAPI(promptText, "אתה קופירייטר ומנתח מערכות תוכנה בכיר. כתוב בשפה נקייה, מקצועית ומכובדת בלבד.");
-        resultBox.innerText = aiResponse;
+        // שימוש בפונקציית העיצוב החדשה
+        resultBox.innerHTML = formatMarkdownText(aiResponse);
     } catch (e) {
         resultBox.innerText = '❌ אירעה שגיאה בטעינת הניתוח. נסה שוב מאוחר יותר.';
         btn.style.display = 'inline-block';
@@ -575,7 +587,8 @@ ${itemsContext || 'אין פריטים ישירים, קיימות רק תתי ת
 
     try {
         const aiResponse = await callGeminiAPI(promptText, "אתה עוזר וירטואלי המציג את תיק העבודות. ענה בעברית צחה, מקצועית, נקייה ומכובדת בלבד.");
-        textDiv.innerText = aiResponse;
+        // שימוש בפונקציית העיצוב החדשה
+        textDiv.innerHTML = formatMarkdownText(aiResponse);
     } catch (e) {
         textDiv.innerText = '❌ אירעה שגיאה ביצירת הסיכום.';
         btnElement.style.display = 'inline-block';
