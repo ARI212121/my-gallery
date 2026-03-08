@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>צור קשר - הגלריה שלי</title>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&family=Heebo:wght@400;700&family=Rubik:wght@400;700&family=Varela+Round&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --main-color: #1abc9c;
+        --bg-color-1: #f5f7fa;
+        --text-color: #333333;
+        --card-bg: rgba(255, 255, 255, 0.9);
+        --font-family: 'Segoe UI', Tahoma, sans-serif;
+    }
+    
+    body.user-dark-mode {
+        --bg-color-1: #121212;
+        --text-color: #e0e0e0;
+        --card-bg: #1e1e1e;
+    }
+
+    body {
+        font-family: var(--font-family);
+        background: var(--bg-color-1);
+        color: var(--text-color); margin: 0; padding: 40px 20px;
+        min-height: 100vh; display: flex; justify-content: center; align-items: center;
+    }
+
+    .contact-container {
+        background: var(--card-bg);
+        padding: 40px; border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        width: 100%; max-width: 600px;
+        border: 2px solid var(--main-color);
+        position: relative;
+    }
+
+    h2 { color: var(--main-color); text-align: center; font-size: 32px; margin-top: 0; margin-bottom: 30px; }
+    
+    .input-group { margin-bottom: 20px; }
+    label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 16px; }
+    input, textarea { 
+        width: 100%; padding: 15px; box-sizing: border-box; 
+        border-radius: 10px; border: 1px solid #ccc; font-size: 16px; 
+        font-family: inherit; background: transparent; color: inherit;
+        transition: 0.3s;
+    }
+    input:focus, textarea:focus { outline: none; border-color: var(--main-color); box-shadow: 0 0 10px rgba(26, 188, 156, 0.2); }
+    
+    .btn-submit {
+        background: var(--main-color); color: white; border: none;
+        width: 100%; padding: 16px; font-size: 20px; font-weight: bold;
+        border-radius: 10px; cursor: pointer; transition: 0.3s;
+    }
+    .btn-submit:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+    
+    .back-link { display: block; text-align: center; margin-top: 25px; color: var(--text-color); text-decoration: none; font-weight: bold; font-size: 16px; }
+    .back-link:hover { color: var(--main-color); text-decoration: underline; }
+
+    #loader { display: none; text-align: center; color: var(--main-color); font-weight: bold; margin-top: 15px; font-size: 18px; }
+    #successMsg { display: none; background: #d4edda; color: #155724; padding: 20px; border-radius: 10px; text-align: center; font-weight: bold; font-size: 18px; border: 1px solid #c3e6cb; }
+</style>
+</head>
+<body>
+
+<div class="contact-container" id="formContainer">
+    <h2>✉️ יצירת קשר</h2>
+    <div class="input-group">
+        <label>שם מלא</label>
+        <input type="text" id="c_name" placeholder="ישראל ישראלי" required>
+    </div>
+    <div class="input-group">
+        <label>מספר טלפון</label>
+        <input type="tel" id="c_phone" placeholder="050-0000000" required>
+    </div>
+    <div class="input-group">
+        <label>כתובת אימייל (אופציונלי)</label>
+        <input type="email" id="c_email" placeholder="email@domain.com">
+    </div>
+    <div class="input-group">
+        <label>נושא הפנייה</label>
+        <input type="text" id="c_subject" placeholder="באיזה נושא נוכל לעזור?" required>
+    </div>
+    <div class="input-group">
+        <label>תוכן ההודעה</label>
+        <textarea id="c_message" rows="5" placeholder="כתוב לנו כאן..." required></textarea>
+    </div>
+    <button class="btn-submit" id="submitBtn" onclick="sendMessage()">שלח הודעה 🚀</button>
+    <div id="loader">שולח נתונים... ⏳</div>
+    
+    <a href="index.html" class="back-link">🔙 חזרה לגלריה</a>
+</div>
+
+<div class="contact-container" id="successMsg">
+    <h2 style="color: #155724;">✅ ההודעה נשלחה בהצלחה!</h2>
+    <p>תודה רבה על פנייתך. קיבלנו את ההודעה וניצור קשר בהקדם.</p>
+    <br>
+    <a href="index.html" class="btn-submit" style="display:inline-block; text-decoration:none;">חזרה לאתר</a>
+</div>
+
+<script>
+// --- הכנס כאן את כתובת ה-WebApp החדשה שלך! ---
+const gasUrl = 'https://script.google.com/macros/s/AKfycbzhQ3D6LYDGmN2-WgfBSyBcQuzu6nLdxE4VmFRT2anbmzz5SU9RnTlEBEXDFxw2CS_e/exec';
+
+// טעינת הגדרות עיצוב כדי להתאים למראה האתר
+async function loadTheme() {
+    try {
+        const response = await fetch(gasUrl);
+        const data = await response.json();
+        if(data.settings) {
+            const root = document.documentElement;
+            if(data.settings.mainColor) root.style.setProperty('--main-color', data.settings.mainColor);
+            if(data.settings.bg1) root.style.setProperty('--bg-color-1', data.settings.bg1);
+            if(data.settings.textColor) root.style.setProperty('--text-color', data.settings.textColor);
+            if(data.settings.font) root.style.setProperty('--font-family', data.settings.font);
+            if(data.settings.defaultMode === 'dark') document.body.classList.add('user-dark-mode');
+        }
+    } catch(e) {}
+}
+
+async function sendMessage() {
+    const name = document.getElementById('c_name').value.trim();
+    const phone = document.getElementById('c_phone').value.trim();
+    const email = document.getElementById('c_email').value.trim();
+    const subject = document.getElementById('c_subject').value.trim();
+    const message = document.getElementById('c_message').value.trim();
+
+    if(!name || !phone || !subject || !message) {
+        alert("נא למלא את כל שדות החובה!");
+        return;
+    }
+
+    document.getElementById('submitBtn').style.display = 'none';
+    document.getElementById('loader').style.display = 'block';
+
+    const formData = new URLSearchParams();
+    formData.append('action', 'sendMessage');
+    formData.append('name', name);
+    formData.append('phone', phone);
+    formData.append('email', email);
+    formData.append('subject', subject);
+    formData.append('msgContent', message);
+
+    try {
+        const res = await fetch(gasUrl, { method: 'POST', body: formData });
+        const data = await res.json();
+        if(data.status === "success") {
+            document.getElementById('formContainer').style.display = 'none';
+            document.getElementById('successMsg').style.display = 'block';
+        } else {
+            alert("שגיאה בשליחה. נסה שוב.");
+            document.getElementById('submitBtn').style.display = 'block';
+        }
+    } catch(err) {
+        alert("שגיאת תקשורת.");
+        document.getElementById('submitBtn').style.display = 'block';
+    }
+    document.getElementById('loader').style.display = 'none';
+}
+
+window.onload = loadTheme;
+</script>
+</body>
+</html>
