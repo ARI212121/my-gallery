@@ -68,6 +68,7 @@
         border: var(--border-width) solid transparent;
         box-shadow: 0 var(--shadow-depth) calc(var(--shadow-depth)*2) var(--shadow-color);
         transition: all 0.3s ease;
+        position: relative;
     }
 
     .gallery-grid.list-view .item-card, .gallery-grid.list-view .folder-card { flex-direction: row; justify-content: flex-start; text-align: right; padding: 15px; }
@@ -126,10 +127,10 @@
         font-size: 18px;
         color: var(--text-color);
         transition: all 0.3s ease;
-        z-index: 10; /* כדי שיהיה מעל התמונה/iframe */
-        opacity: 0; /* מוסתר כברירת מחדל */
+        z-index: 10;
+        opacity: 0;
     }
-    .item-card:hover .download-btn { opacity: 1; } /* מופיע בריחוף */
+    .item-card:hover .download-btn { opacity: 1; }
     .download-btn:hover { background: var(--main-color); color: white; border-color: var(--main-color); transform: scale(1.1); }
 
     .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); backdrop-filter: blur(5px); }
@@ -253,7 +254,7 @@
 <script>
 // --- הכנס כאן את כתובת ה-WebApp החדשה שלך! ---
 const gasUrl = 'https://script.google.com/macros/s/AKfycbzhQ3D6LYDGmN2-WgfBSyBcQuzu6nLdxE4VmFRT2anbmzz5SU9RnTlEBEXDFxw2CS_e/exec';
-const apiKey = "AIzaSyCpScIB7bmEBIhvjHImaeuu2MGZrJ6HllE"; // מפתח ה-API שלך הוזן כאן בהצלחה
+// מפתח ה-API הוסר מכאן לחלוטין ועבר לשרת!
 
 let allFiles = [];
 let cardAnimClass = 'anim-float';
@@ -335,7 +336,6 @@ function renderPath(path) {
         }
     });
 
-    // תיבת ה-AI לסיכום תיקייה - מציג רק כפתור מעוצב וללא מסגרת
     if(foldersFound.size > 0 || itemsToRender.length > 0) {
         const summaryDiv = document.createElement('div');
         summaryDiv.style.gridColumn = '1 / -1';
@@ -369,9 +369,8 @@ function renderPath(path) {
             const isImage = item.fileName.match(/\.(jpeg|jpg|gif|png|webp)$/i) != null;
             const isHtml = item.fileName.match(/\.(html|htm)$/i) != null;
             
-            // מונע לחיצה על כפתור ההורדה מלהפעיל את אירוע הלחיצה של הכרטיסייה עצמה
             card.onclick = (e) => { 
-                if(e.target.closest('.download-btn')) return; // אם לחצו על כפתור ההורדה, אל תעשה כלום ברמת הכרטיסייה
+                if(e.target.closest('.download-btn')) return;
                 if(isImage) openModal(item.fileUrl, item.fileName, item.description); 
                 else window.open(item.fileUrl, '_self'); 
             };
@@ -416,7 +415,6 @@ function filterItems() {
     const query = document.getElementById('searchInput').value.toLowerCase();
     const cards = document.getElementById('mainView').children;
     for(let card of cards) {
-        // מתעלם מכותרות ריקות או תיבת סיכום
         if(card.tagName === 'H3' || card.classList.contains('folder-summary-box')) continue;
         const text = card.innerText.toLowerCase();
         if(text.includes(query)) card.style.display = '';
@@ -447,7 +445,6 @@ function openModal(src, title, desc) {
     currentModalTitle = title;
     currentModalDesc = desc || "";
 
-    // איפוס תצוגת מנתח הפרויקטים בעת פתיחת חלון חדש
     document.getElementById('aiExplainerResult').style.display = 'none';
     document.getElementById('aiExplainerResult').innerText = '';
     document.getElementById('btnExplainProject').style.display = 'inline-block';
@@ -455,7 +452,7 @@ function openModal(src, title, desc) {
 
 function closeModal() { document.getElementById("imageModal").style.display = "none"; }
 
-// --- פונקציות העוזר החכם של Gemini ---
+// --- פונקציות העוזר החכם של Gemini (בקשות מאובטחות דרך השרת) ---
 function toggleAIChat() {
     const chatWin = document.getElementById('aiChatWindow');
     chatWin.style.display = chatWin.style.display === 'flex' ? 'none' : 'flex';
@@ -482,6 +479,7 @@ function updateChatMessage(id, text) {
     }
 }
 
+// קריאה מאובטחת לשרת במקום פנייה ישירה לגוגל
 async function callGeminiAPI(promptText, systemPromptOverride = null) {
     const galleryItems = allFiles.map(f => `- תיקייה: ${f.projectName} | קובץ: ${f.fileName} | תיאור: ${f.description || 'ללא תיאור'}`).join('\n');
     const defaultSystemPrompt = `אתה עוזר וירטואלי חכם ואדיב הנמצא באתר של ARISH פיתוח תוכנה.
@@ -489,23 +487,25 @@ async function callGeminiAPI(promptText, systemPromptOverride = null) {
 ${galleryItems}
 אם שואלים אותך על פריט שלא נמצא ברשימה, אמור שאינך רואה אותו באתר כרגע. ענה בקצרה, בצורה שיווקית ומזמינה, ותמיד בשפה העברית, צחה ומכובדת בלבד.`;
 
-    const payload = {
-        contents: [{ parts: [{ text: promptText }] }],
-        systemInstruction: { parts: [{ text: systemPromptOverride || defaultSystemPrompt }] }
-    };
+    const formData = new URLSearchParams();
+    formData.append('action', 'askGemini');
+    formData.append('promptText', promptText);
+    formData.append('systemInstruction', systemPromptOverride || defaultSystemPrompt);
 
     let delay = 1000;
     for (let attempt = 0; attempt < 5; attempt++) {
         try {
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`, {
+            const response = await fetch(gasUrl, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: formData
             });
             
-            if (!response.ok) throw new Error(`HTTP שגיאה ${response.status}`);
             const result = await response.json();
-            return result.candidates[0].content.parts[0].text;
+            if (result.status === 'success') {
+                return result.text;
+            } else {
+                throw new Error(result.message);
+            }
         } catch (error) {
             if (attempt === 4) throw error;
             await new Promise(r => setTimeout(r, delay));
@@ -531,7 +531,6 @@ async function sendChatMessage() {
     }
 }
 
-// פונקציה לניתוח שיווקי של פרויקט בחלון הקופץ
 async function explainProjectWithAI() {
     const btn = document.getElementById('btnExplainProject');
     const resultBox = document.getElementById('aiExplainerResult');
@@ -553,7 +552,6 @@ async function explainProjectWithAI() {
     }
 }
 
-// פונקציה לסיכום חכם של תוכן תיקייה
 async function summarizeCurrentFolder(path, textElementId, btnElement) {
     const pathParts = path ? path.split('/') : [];
     const depth = pathParts.length;
@@ -562,7 +560,6 @@ async function summarizeCurrentFolder(path, textElementId, btnElement) {
         const fileParts = file.projectName.split('/');
         let isMatch = true;
         for(let i=0; i<depth; i++) if(fileParts[i] !== pathParts[i]) isMatch = false;
-        // מסנן רק פריטים ישירים בתוך התיקייה
         if(isMatch && fileParts.length === depth) items.push(file);
     });
 
@@ -589,4 +586,3 @@ window.onload = init;
 </script>
 </body>
 </html>
-
