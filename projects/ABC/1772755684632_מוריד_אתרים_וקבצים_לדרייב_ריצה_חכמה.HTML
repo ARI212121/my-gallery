@@ -303,12 +303,13 @@
                             if (chunkRes.error) throw new Error(chunkRes.error);
                             if (chunkRes.type === 'end_of_file') break;
                             
-                            // המרה מ-Base64 חזרה לבינארי בשיטה מהירה וחסכונית יותר בזיכרון
+                            // --- הוחזר לקוד המקורי שעבד לך מצוין! ---
                             const byteCharacters = atob(chunkRes.data);
-                            const byteArray = new Uint8Array(byteCharacters.length);
+                            const byteNumbers = new Array(byteCharacters.length);
                             for (let i = 0; i < byteCharacters.length; i++) {
-                                byteArray[i] = byteCharacters.charCodeAt(i);
+                                byteNumbers[i] = byteCharacters.charCodeAt(i);
                             }
+                            const byteArray = new Uint8Array(byteNumbers);
                             const blob = new Blob([byteArray], {type: "application/octet-stream"});
                             
                             // לחיצת הורדה מדומה בדפדפן
@@ -318,19 +319,13 @@
                             document.body.appendChild(link);
                             link.click();
                             document.body.removeChild(link);
-                            
-                            // קריטי: השהייה של 15 שניות לפני ניקוי הזיכרון כדי שהדפדפן יספיק לכתוב את הקובץ במלואו לדיסק
-                            setTimeout(() => {
-                                URL.revokeObjectURL(link.href);
-                            }, 15000);
+                            URL.revokeObjectURL(link.href);
                             
                             downloadedBytes += chunkRes.actualSize;
                             partIndex++;
                             
-                            // אם מורידים בחלקים, ממתינים טיפה כדי לתת לדפדפן זמן להקפיץ בקשת אישור וכדי לא לקרוס
-                            if (!isSingleFile) {
-                                await new Promise(r => setTimeout(r, 1500));
-                            }
+                            // החזרנו את ההשהייה המקורית שהייתה קיימת לכל הקבצים ומונעת את חיתוך ההורדה!
+                            await new Promise(r => setTimeout(r, 1500));
                         }
                         
                         if (isSingleFile) {
