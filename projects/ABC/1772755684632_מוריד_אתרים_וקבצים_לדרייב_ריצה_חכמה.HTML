@@ -303,13 +303,12 @@
                             if (chunkRes.error) throw new Error(chunkRes.error);
                             if (chunkRes.type === 'end_of_file') break;
                             
-                            // המרה מ-Base64 חזרה לבינארי
+                            // המרה מ-Base64 חזרה לבינארי בשיטה מהירה וחסכונית יותר בזיכרון
                             const byteCharacters = atob(chunkRes.data);
-                            const byteNumbers = new Array(byteCharacters.length);
+                            const byteArray = new Uint8Array(byteCharacters.length);
                             for (let i = 0; i < byteCharacters.length; i++) {
-                                byteNumbers[i] = byteCharacters.charCodeAt(i);
+                                byteArray[i] = byteCharacters.charCodeAt(i);
                             }
-                            const byteArray = new Uint8Array(byteNumbers);
                             const blob = new Blob([byteArray], {type: "application/octet-stream"});
                             
                             // לחיצת הורדה מדומה בדפדפן
@@ -319,7 +318,11 @@
                             document.body.appendChild(link);
                             link.click();
                             document.body.removeChild(link);
-                            URL.revokeObjectURL(link.href);
+                            
+                            // קריטי: השהייה של 15 שניות לפני ניקוי הזיכרון כדי שהדפדפן יספיק לכתוב את הקובץ במלואו לדיסק
+                            setTimeout(() => {
+                                URL.revokeObjectURL(link.href);
+                            }, 15000);
                             
                             downloadedBytes += chunkRes.actualSize;
                             partIndex++;
