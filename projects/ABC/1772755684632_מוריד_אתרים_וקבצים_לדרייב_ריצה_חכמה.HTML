@@ -19,6 +19,7 @@
         .action-btn:hover { opacity: 0.9; }
         .btn-blue { background: var(--primary); }
         .btn-green { background: var(--success); }
+        .btn-purple { background: #8b5cf6; }
         
         .status-box { margin-top: 20px; padding: 15px; border-radius: 8px; background: #e0e7ff; text-align: center; font-weight: bold; display: none; align-items: center; justify-content: center; gap: 10px; }
         .spinner { width: 20px; height: 20px; border: 3px solid rgba(37, 99, 235, 0.2); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; display: none; }
@@ -61,8 +62,9 @@
             <label><input type="checkbox" id="translate_check"> תרגם את תוכן העמוד לעברית (מנוע פנימי מתקדם - לא פוגע בעיצוב!)</label>
         </div>
         <div style="display: flex; gap: 10px;">
-            <button class="action-btn btn-blue" onclick="process('site', false)">🌐 הצג כאתר</button>
-            <button class="action-btn btn-green" onclick="process('site', true)">📥 הורד קובץ למחשב</button>
+            <button class="action-btn btn-blue" onclick="process('site', false, false)">🌐 הצג כאתר</button>
+            <button class="action-btn btn-green" onclick="process('site', true, false)">📥 הורד לדרייב</button>
+            <button class="action-btn btn-purple" onclick="process('site', true, true)">💻 הורד למחשב</button>
         </div>
     </div>
 
@@ -78,7 +80,7 @@
     <div id="standalone" class="tab-content">
         <h2>תרגום טקסט ארוך</h2>
         <textarea id="free_text" placeholder="הדבק כאן טקסט ארוך לתרגום..." rows="5"></textarea>
-        <button class="action-btn btn-blue" onclick="process('text', false)">תרגם לעברית</button>
+        <button class="action-btn btn-blue" onclick="process('text', false, false)">תרגם לעברית</button>
     </div>
 
     <div id="status" class="status-box">
@@ -98,7 +100,7 @@
 </div>
 
 <script>
-    // === הדבק כאן את כתובת ה-Web App שלך מגוגל סקריפט ===
+    // === הדבק כאן את כתובת ה-Web App שלך מגוגל סקריפט לאחר פריסה חדשה ===
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxqeiFkZpmUl0qkei-x2JW7nBMa834J2R4MOcGT_NscEwPY8kbxsjkdnA1X29DTzTGg/exec";
 
     let resultStore = "";
@@ -128,7 +130,7 @@
             document.getElementById('back_btn').style.display = 'block';
         }
         document.getElementById('target_url').value = newUrl;
-        process('site', false); 
+        process('site', false, false); 
     };
 
     window.goBack = function() {
@@ -138,7 +140,7 @@
             if(urlHistory.length === 0) {
                 document.getElementById('back_btn').style.display = 'none';
             }
-            process('site', false);
+            process('site', false, false);
         }
     };
 
@@ -251,7 +253,7 @@
         if(isLoading) spinner.style.borderTopColor = isError ? '#991b1b' : 'var(--primary)';
     }
 
-    async function process(mode, isDownloadMode) {
+    async function process(mode, isDownloadMode, isLocalDownload = false) {
         const dl = document.getElementById('download_link');
         const preview = document.getElementById('previewContainer');
         dl.style.display = 'none';
@@ -272,7 +274,71 @@
                     if (totalBytes === 0) throw new Error("השרת המרוחק לא תומך בהורדה בחלקים (חסר משקל קובץ).");
 
                     const fileName = infoRes.fileName || "downloaded_file";
+                    const CHUNK_SIZE = 49 * 1024 * 1024; // 49MB
                     
+                    // משתנה בוליאני שבודק האם הקובץ קטן מהמגבלה ויירד כקובץ אחד
+                    const isSingleFile = totalBytes <= CHUNK_SIZE;
+
+                    let downloadedBytes = 0;
+                    let partIndex = 1;
+
+                    // --- לוגיקת הורדה למחשב ---
+                    if (isLocalDownload) {
+                        for (let start = 0; start < totalBytes; start += CHUNK_SIZE) {
+                            let end = Math.min(start + CHUNK_SIZE - 1, totalBytes - 1);
+                            let percent = Math.round((downloadedBytes / totalBytes) * 100);
+                            
+                            // קביעת שם הקובץ: אם זה קובץ יחיד הסיומת נשארת, אחרת מוסיפים .part
+                            let currentFileName = isSingleFile ? fileName : `${fileName}.part${("000" + partIndex).slice(-3)}`;
+                            
+                            showStatus(`מוריד למחשב: '${currentFileName}'... (${percent}% הושלמו)`, false, true);
+                            
+                            const chunkRes = await server({ 
+                                action: "get_chunk_base64", 
+                                url: url, 
+                                start: start, 
+                                end: end
+                            });
+                            
+                            if (chunkRes.error) throw new Error(chunkRes.error);
+                            if (chunkRes.type === 'end_of_file') break;
+                            
+                            // המרה מ-Base64 חזרה לבינארי
+                            const byteCharacters = atob(chunkRes.data);
+                            const byteNumbers = new Array(byteCharacters.length);
+                            for (let i = 0; i < byteCharacters.length; i++) {
+                                byteNumbers[i] = byteCharacters.charCodeAt(i);
+                            }
+                            const byteArray = new Uint8Array(byteNumbers);
+                            const blob = new Blob([byteArray], {type: "application/octet-stream"});
+                            
+                            // לחיצת הורדה מדומה בדפדפן
+                            const link = document.createElement('a');
+                            link.href = URL.createObjectURL(blob);
+                            link.download = currentFileName;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            URL.revokeObjectURL(link.href);
+                            
+                            downloadedBytes += chunkRes.actualSize;
+                            partIndex++;
+                            
+                            // אם מורידים בחלקים, ממתינים טיפה כדי לתת לדפדפן זמן להקפיץ בקשת אישור וכדי לא לקרוס
+                            if (!isSingleFile) {
+                                await new Promise(r => setTimeout(r, 1500));
+                            }
+                        }
+                        
+                        if (isSingleFile) {
+                            showStatus(`הסתיים! הקובץ ירד במלואו למחשב.`, false, false);
+                        } else {
+                            showStatus(`הסתיים! חלקי הקובץ ירדו למחשב. ניתן לאחד אותם כעת.`, false, false);
+                        }
+                        return;
+                    }
+
+                    // --- לוגיקת הורדה לדרייב ---
                     showStatus("מחפש או יוצר תיקייה בדרייב...", false, true);
                     const folderRes = await server({ action: "create_drive_folder", folderName: fileName });
                     if (folderRes.error) throw new Error(folderRes.error);
@@ -282,16 +348,13 @@
                         showStatus(`נמצאה תיקייה קיימת '${fileName}', ממשיך מאותה נקודה...`, false, true);
                     }
 
-                    const CHUNK_SIZE = 49 * 1024 * 1024; // 49MB כפי שביקשת
-                    let downloadedBytes = 0;
-                    let partIndex = 1;
-
                     for (let start = 0; start < totalBytes; start += CHUNK_SIZE) {
                         let end = Math.min(start + CHUNK_SIZE - 1, totalBytes - 1);
                         let percent = Math.round((downloadedBytes / totalBytes) * 100);
-                        let expectedChunkSize = end - start + 1; // חישוב המשקל המדויק של החתיכה הזו
+                        let expectedChunkSize = end - start + 1;
                         
-                        showStatus(`שומר לתיקייה '${fileName}'... חלק ${partIndex} (${percent}% הושלמו)`, false, true);
+                        let statusMsg = isSingleFile ? `שומר קובץ '${fileName}' לדרייב... (${percent}% הושלמו)` : `שומר לתיקייה '${fileName}' בדרייב... חלק ${partIndex} (${percent}% הושלמו)`;
+                        showStatus(statusMsg, false, true);
                         
                         const chunkRes = await server({ 
                             action: "save_chunk_to_drive", 
@@ -301,24 +364,26 @@
                             partIndex: partIndex,
                             fileName: fileName,
                             folderId: folderId,
-                            expectedSize: expectedChunkSize // משדרים לשרת מה המשקל הצפוי
+                            expectedSize: expectedChunkSize,
+                            isSingleFile: isSingleFile
                         });
                         
                         if (chunkRes.error) throw new Error(chunkRes.error);
                         
-                        // עדכון מסך אם הקובץ דולג
                         if (chunkRes.skipped) {
-                            showStatus(`החלק ה-${partIndex} נמצא בתיקייה תקין במלואו, מדלג...`, false, true);
+                            showStatus(isSingleFile ? `הקובץ כבר קיים בתיקייה, מדלג...` : `החלק ה-${partIndex} נמצא בתיקייה תקין במלואו, מדלג...`, false, true);
                         }
                         
                         downloadedBytes += expectedChunkSize;
                         partIndex++;
                     }
 
-                    showStatus(`הסתיים! ${partIndex - 1} חלקים נשמרו בדרייב בתוך התיקייה '${fileName}'.`, false, false);
+                    let finishMsg = isSingleFile ? `הסתיים! הקובץ '${fileName}' נשמר בדרייב.` : `הסתיים! ${partIndex - 1} חלקים נשמרו בדרייב בתוך התיקייה '${fileName}'.`;
+                    showStatus(finishMsg, false, false);
                     return;
                 }
 
+                // --- לוגיקת הצגת האתר (שאיבה) ---
                 showStatus(`שואב את: ${url}...`, false, true);
                 const fetchRes = await server({ action: "fetch_page", url: url, forceDownload: false });
                 if(fetchRes.error) throw new Error(fetchRes.error);
