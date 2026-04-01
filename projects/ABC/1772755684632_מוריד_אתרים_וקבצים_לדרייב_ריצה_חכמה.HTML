@@ -303,7 +303,7 @@
                             if (chunkRes.error) throw new Error(chunkRes.error);
                             if (chunkRes.type === 'end_of_file') break;
                             
-                            // --- הוחזר לקוד המקורי שעבד לך מצוין! ---
+                            // --- הוחזר לקוד המקורי (atob) שעבד לך מצוין! ---
                             const byteCharacters = atob(chunkRes.data);
                             const byteNumbers = new Array(byteCharacters.length);
                             for (let i = 0; i < byteCharacters.length; i++) {
@@ -314,18 +314,23 @@
                             
                             // לחיצת הורדה מדומה בדפדפן
                             const link = document.createElement('a');
-                            link.href = URL.createObjectURL(blob);
+                            const objectUrl = URL.createObjectURL(blob); // שומרים את הקישור למשתנה כדי למחוק אותו רק אחרי זמן
+                            link.href = objectUrl;
                             link.download = currentFileName;
                             document.body.appendChild(link);
                             link.click();
                             document.body.removeChild(link);
-                            URL.revokeObjectURL(link.href);
+                            
+                            // החידוש היחיד שכאן: אנחנו משהים את מחיקת הזיכרון ב-60 שניות כדי למנוע את באג ה-22 קילו-בייט!
+                            setTimeout(() => { URL.revokeObjectURL(objectUrl); }, 60000);
                             
                             downloadedBytes += chunkRes.actualSize;
                             partIndex++;
                             
-                            // החזרנו את ההשהייה המקורית שהייתה קיימת לכל הקבצים ומונעת את חיתוך ההורדה!
-                            await new Promise(r => setTimeout(r, 1500));
+                            // ההשהייה המקורית נשארה גם היא כדי לשמור על היציבות
+                            if (!isSingleFile) {
+                                await new Promise(r => setTimeout(r, 1500));
+                            }
                         }
                         
                         if (isSingleFile) {
